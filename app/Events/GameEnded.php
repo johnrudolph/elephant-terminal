@@ -16,7 +16,7 @@ class GameEnded extends Event
     {
         $state->status = 'complete';
 
-        $state->victors = $state->victor();
+        $state->victors = $state->victor($state->board);
     }
 
     public function handle()
