@@ -27,10 +27,25 @@ class GameStarted extends Event
 
     public function fired()
     {
-        $state = $this->state(GameState::class);
+        $game = $this->state(GameState::class);
 
-        if ($state->currentPlayer()->is_bot) {
-            // @todo fire bot move event
+        if ($game->currentPlayer()->is_bot) {
+            $bot_tile_move = $game->selectBotTileMove($game->board);
+
+            PlayerPlayedTile::fire(
+                game_id: $this->game_id,
+                player_id: $game->current_player_id,
+                space: $bot_tile_move['space'],
+                direction: $bot_tile_move['direction']
+            );
+
+            $bot_elephant_move = $game->selectBotElephantMove($game->board);
+
+            PlayerMovedElephant::fire(
+                game_id: $this->game_id,
+                player_id: $game->current_player_id,
+                space: $bot_elephant_move
+            );
         }
     }
 

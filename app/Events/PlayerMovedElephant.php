@@ -72,4 +72,28 @@ class PlayerMovedElephant extends Event
     {
         // @todo why do I need this function
     }
+
+    public function fired()
+    {
+        $game = $this->state(GameState::class);
+
+        if ($game->currentPlayer()->is_bot) {
+            $bot_tile_move = $game->selectBotTileMove($game->board);
+
+            PlayerPlayedTile::fire(
+                game_id: $this->game_id,
+                player_id: $game->current_player_id,
+                space: $bot_tile_move['space'],
+                direction: $bot_tile_move['direction']
+            );
+
+            $bot_elephant_move = $game->selectBotElephantMove($game->board);
+
+            PlayerMovedElephant::fire(
+                game_id: $this->game_id,
+                player_id: $game->current_player_id,
+                space: $bot_elephant_move
+            );
+        }
+    }
 }

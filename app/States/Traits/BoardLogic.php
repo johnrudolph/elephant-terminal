@@ -102,7 +102,7 @@ trait BoardLogic
             )->toArray();
     }
 
-    public function validSlides()
+    public function validSlides(array $board)
     {
         $all_possible_slides = [
             ['space' => 1, 'direction' => 'down'],
@@ -171,18 +171,19 @@ trait BoardLogic
         return $valid_elephant_moves;
     }
 
-    public function victor()
+    public function victor(array $board)
     {
-        return collect([1, 2, 3, 5, 6, 7, 9, 10, 11])->map(function ($space) {
-            if (
-                $this->board[$space] !== null
-                && $this->board[$space] === $this->board[$space + 1]
-                && $this->board[$space] === $this->board[$space + 4]
-                && $this->board[$space] === $this->board[$space + 5]
-            ) {
-                return $this->board[$space];
-            }
-        })
+        return collect([1, 2, 3, 5, 6, 7, 9, 10, 11])
+            ->map(function ($space) use ($board) {
+                if (
+                    $board[$space] !== null
+                    && $board[$space] === $board[$space + 1]
+                    && $board[$space] === $board[$space + 4]
+                    && $board[$space] === $board[$space + 5]
+                ) {
+                    return $board[$space];
+                }
+            })
             ->reject(fn ($victor) => $victor === null)
             ->unique()
             ->values()

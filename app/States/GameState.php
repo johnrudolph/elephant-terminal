@@ -3,11 +3,12 @@
 namespace App\States;
 
 use App\States\Traits\BoardLogic;
+use App\States\Traits\BotLogic;
 use Thunk\Verbs\State;
 
 class GameState extends State
 {
-    use BoardLogic;
+    use BoardLogic, BotLogic;
 
     public string $status;
 

@@ -101,7 +101,7 @@ class PlayerPlayedTile extends Event
 
         $both_player_hands_are_empty = $game->currentPlayer()->hand === 0 && $game->idlePlayer()->hand === 0;
 
-        if ($game->victor() || $both_player_hands_are_empty) {
+        if ($game->victor($game->board) || $both_player_hands_are_empty) {
             GameEnded::fire(game_id: $this->game_id);
         }
     }
