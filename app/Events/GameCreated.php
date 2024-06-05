@@ -3,10 +3,9 @@
 namespace App\Events;
 
 use App\Models\Game;
-use Thunk\Verbs\Event;
 use App\States\GameState;
-use App\Events\PlayerCreated;
 use Thunk\Verbs\Attributes\Autodiscovery\StateId;
+use Thunk\Verbs\Event;
 
 class GameCreated extends Event
 {
@@ -26,8 +25,6 @@ class GameCreated extends Event
         $state->is_single_player = $this->is_single_player;
 
         $state->player_1_id = $this->user_id;
-
-        $state->board = collect(range(0, 15))->map(fn($i) => null);
     }
 
     public function fired()

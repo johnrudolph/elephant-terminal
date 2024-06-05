@@ -2,14 +2,13 @@
 
 namespace App\States;
 
-use Thunk\Verbs\State;
 use App\States\Traits\BoardLogic;
-use Illuminate\Support\Collection;
+use Thunk\Verbs\State;
 
 class GameState extends State
 {
-    use BoardLogic; 
-    
+    use BoardLogic;
+
     public string $status;
 
     public bool $is_single_player;
@@ -22,16 +21,23 @@ class GameState extends State
 
     public string $phase;
 
+    public array $victors;
+
     const PHASE_PLACE_TILE = 'tile';
 
     const PHASE_MOVE_ELEPHANT = 'move';
 
-    public string $elephant_position;
-
-    public Collection $board;
+    public int $elephant_position = 6;
 
     public function currentPlayer(): PlayerState
     {
         return PlayerState::load($this->current_player_id);
+    }
+
+    public function idlePlayer(): PlayerState
+    {
+        return $this->current_player_id === $this->player_1_id
+            ? PlayerState::load($this->player_2_id)
+            : PlayerState::load($this->player_1_id);
     }
 }

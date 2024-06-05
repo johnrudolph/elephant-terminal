@@ -2,12 +2,11 @@
 
 namespace App\Events;
 
-use App\Models\Game;
 use App\Models\Player;
-use Thunk\Verbs\Event;
 use App\States\GameState;
 use App\States\PlayerState;
 use Thunk\Verbs\Attributes\Autodiscovery\StateId;
+use Thunk\Verbs\Event;
 
 class PlayerCreated extends Event
 {
@@ -19,15 +18,17 @@ class PlayerCreated extends Event
 
     public int $user_id;
 
-    public bool $is_host;
+    public ?bool $is_host = false;
 
-    public bool $is_bot;
+    public ?bool $is_bot = false;
 
     public function apply(PlayerState $state)
     {
         $state->user_id = $this->user_id;
 
-        $state->hand = 8;
+        $state->is_bot = $this->is_bot;
+
+        $state->is_host = $this->is_host;
     }
 
     public function applyToGame(GameState $state)

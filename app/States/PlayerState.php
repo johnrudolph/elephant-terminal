@@ -14,5 +14,5 @@ class PlayerState extends State
 
     public ?string $bot_difficulty = null;
 
-    public int $hand;
+    public int $hand = 8;
 }
