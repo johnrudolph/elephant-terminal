@@ -56,23 +56,23 @@ abstract class TestCase extends BaseTestCase
 
     public function dumpBoard()
     {
-        $elephant_position = $this->game->state()->elephant_position;
+        $elephant_space = $this->game->state()->elephant_space;
 
         $b = collect($this->game->state()->board)
-            ->mapWithKeys(function($occupant, $space) use ($elephant_position) {
+            ->mapWithKeys(function($occupant, $space) use ($elephant_space) {
                 if ($occupant === $this->player_1->id) {
-                    return $elephant_position === $space
+                    return $elephant_space === $space
                         ? [$space => '1E'] 
                         : [$space => '1'];
                 }
 
                 if ($occupant === $this->player_2->id) {
-                    return $elephant_position === $space
+                    return $elephant_space === $space
                         ? [$space => '2E'] 
                         : [$space => '2'];
                 }
 
-                return $elephant_position === $space
+                return $elephant_space === $space
                     ? [$space => 'E'] 
                     : [$space => '-'];
             });

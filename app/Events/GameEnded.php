@@ -25,6 +25,8 @@ class GameEnded extends Event
 
         $game->status = 'complete';
 
+        $game->victors = $this->state(GameState::class)->victors;
+
         $game->save();
     }
 }

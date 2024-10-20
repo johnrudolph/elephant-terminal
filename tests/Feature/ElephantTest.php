@@ -9,12 +9,12 @@ beforeEach(function () {
 });
 
 it('allows a player to move the elephant after playing a tile', function () {
-    expect($this->game->state()->elephant_position)->toBe(6);
+    expect($this->game->state()->elephant_space)->toBe(6);
 
     $this->player_1->playTile(1, 'right');
     $this->player_1->moveElephant(2);
 
-    expect($this->game->state()->elephant_position)->toBe(2);
+    expect($this->game->state()->elephant_space)->toBe(2);
 });
 
 it('blocks movement', function () {

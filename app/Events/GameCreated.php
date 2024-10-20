@@ -25,6 +25,10 @@ class GameCreated extends Event
         $state->is_single_player = $this->is_single_player;
 
         $state->player_1_id = $this->user_id;
+
+        $state->victors = [];
+
+        $state->moves = [];
     }
 
     public function fired()
@@ -50,10 +54,19 @@ class GameCreated extends Event
 
     public function handle()
     {
+        $game = $this->state(GameState::class);
+
         Game::create([
             'id' => $this->game_id,
             'code' => $this->generateGameCode(),
             'status' => 'created',
+            'board' => $game->board,
+            'valid_elephant_moves' => $game->validElephantMoves(),
+            'valid_slides' => $game->validSlides(),
+            'elephant_space' => $game->elephant_space,
+            'phase' => $game->phase,
+            'current_player_id' => $game->current_player_id,
+            'victors' => $game->victors,
         ]);
     }
 

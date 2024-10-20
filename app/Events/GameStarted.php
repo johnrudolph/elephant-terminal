@@ -23,6 +23,8 @@ class GameStarted extends Event
         $state->current_player_id = $state->player_1_id;
 
         $state->phase = GameState::PHASE_PLACE_TILE;
+
+        $state->victors = [];
     }
 
     public function fired()

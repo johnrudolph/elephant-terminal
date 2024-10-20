@@ -2,10 +2,11 @@
 
 namespace App\Events;
 
+use App\Models\Game;
+use Thunk\Verbs\Event;
 use App\States\GameState;
 use App\States\PlayerState;
 use Thunk\Verbs\Attributes\Autodiscovery\StateId;
-use Thunk\Verbs\Event;
 
 class PlayerMovedElephant extends Event
 {
@@ -59,7 +60,14 @@ class PlayerMovedElephant extends Event
 
     public function applyToGame(GameState $state)
     {
-        $state->elephant_position = $this->space;
+        $state->moves[] = [
+            'type' => 'elephant',
+            'player_id' => $this->player_id,
+            'origin_space' => $state->elephant_space,
+            'destination_space' => $this->space,
+        ];
+
+        $state->elephant_space = $this->space;
 
         $state->phase = GameState::PHASE_PLACE_TILE;
 
@@ -95,5 +103,18 @@ class PlayerMovedElephant extends Event
                 space: $bot_elephant_move
             );
         }
+    }
+
+    public function handle()
+    {
+        $game = $this->state(GameState::class);
+
+        Game::find($this->game_id)->update([
+            'valid_elephant_moves' => $game->validElephantMoves(),
+            'valid_slides' => $game->validSlides(),
+            'elephant_space' => $game->elephant_space,
+            'phase' => $game->phase,
+            'current_player_id' => $game->current_player_id,
+        ]);
     }
 }

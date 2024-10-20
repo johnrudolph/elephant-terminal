@@ -98,11 +98,11 @@ trait BoardLogic
     public function slidingPositionOccupants(int $space, string $direction)
     {
         return collect($this->slidingPositions($space, $direction))
-            ->map(fn ($position) => $this->board[$position]
-            )->toArray();
+            ->map(fn ($position) => $this->board[$position])
+            ->toArray();
     }
 
-    public function validSlides(array $board)
+    public function validSlides(): array
     {
         $all_possible_slides = [
             ['space' => 1, 'direction' => 'down'],
@@ -131,13 +131,13 @@ trait BoardLogic
     {
         $slidingSpaces = $this->slidingPositions($space, $direction);
 
-        if ($this->elephant_position === $space) {
+        if ($this->elephant_space === $space) {
             return true;
         }
 
         if (
             $this->board[$space]
-            && $this->elephant_position === $slidingSpaces[1]
+            && $this->elephant_space === $slidingSpaces[1]
         ) {
             return true;
         }
@@ -145,7 +145,7 @@ trait BoardLogic
         if (
             $this->board[$space]
             && $this->board[$slidingSpaces[1]]
-            && $this->elephant_position === $slidingSpaces[2]
+            && $this->elephant_space === $slidingSpaces[2]
         ) {
             return true;
         }
@@ -154,7 +154,7 @@ trait BoardLogic
             $this->board[$space]
             && $this->board[$slidingSpaces[1]]
             && $this->board[$slidingSpaces[2]]
-            && $this->elephant_position === $slidingSpaces[3]
+            && $this->elephant_space === $slidingSpaces[3]
         ) {
             return true;
         }
@@ -162,11 +162,11 @@ trait BoardLogic
         return false;
     }
 
-    public function validElephantMoves()
+    public function validElephantMoves(): array
     {
-        $valid_elephant_moves = $this->adjacentSpaces($this->elephant_position);
+        $valid_elephant_moves = $this->adjacentSpaces($this->elephant_space);
 
-        $valid_elephant_moves[] = $this->elephant_position;
+        $valid_elephant_moves[] = $this->elephant_space;
 
         return $valid_elephant_moves;
     }

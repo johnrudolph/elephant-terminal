@@ -2,10 +2,12 @@
 
 namespace App\Events;
 
+use App\Models\Game;
+use App\Models\Player;
+use Thunk\Verbs\Event;
 use App\States\GameState;
 use App\States\PlayerState;
 use Thunk\Verbs\Attributes\Autodiscovery\StateId;
-use Thunk\Verbs\Event;
 
 class PlayerPlayedTile extends Event
 {
@@ -71,6 +73,36 @@ class PlayerPlayedTile extends Event
 
     public function applyToGame(GameState $state)
     {
+        $state->moves[] = [
+            'type' => 'tile',
+            'player_id' => $this->player_id,
+            'space' => $this->space,
+            'direction' => $this->direction,
+            // @todo it would be cool to include data about what else slid, so we could re-animate on the frontend
+        ];
+
+        $sliding_positions = $state->slidingPositions($this->space, $this->direction);
+
+        $occupants = $state->slidingPositionOccupants($this->space, $this->direction);
+
+        if ($occupants[3] && $occupants[2] && $occupants[1] && $occupants[0]) {
+            PlayerState::load($occupants[3])->hand++;
+        }
+
+        if ($occupants[2] && $occupants[1] && $occupants[0]) {
+            $state->board[$sliding_positions[3]] = $occupants[2];
+        }
+
+        if ($occupants[1] && $occupants[0]) {
+            $state->board[$sliding_positions[2]] = $occupants[1];
+        }
+
+        if ($occupants[0]) {
+            $state->board[$sliding_positions[1]] = $occupants[0];
+        }
+
+        $state->board[$this->space] = $this->player_id;
+
         $state->phase = GameState::PHASE_MOVE_ELEPHANT;
     }
 
@@ -83,26 +115,28 @@ class PlayerPlayedTile extends Event
     {
         $game = $this->state(GameState::class);
 
-        $occupants = $game->slidingPositionOccupants($this->space, $this->direction);
-
-        if ($occupants[3] && $occupants[2] && $occupants[1] && $occupants[0]) {
-            TileReturnedToPlayer::fire(
-                game_id: $this->game_id,
-                player_id: $occupants[3],
-            );
-        }
-
-        TilesSlid::fire(
-            game_id: $this->game_id,
-            player_id: $this->player_id,
-            space: $this->space,
-            direction: $this->direction,
-        );
-
         $both_player_hands_are_empty = $game->currentPlayer()->hand === 0 && $game->idlePlayer()->hand === 0;
 
         if ($game->victor($game->board) || $both_player_hands_are_empty) {
             GameEnded::fire(game_id: $this->game_id);
         }
+    }
+
+    public function handle()
+    {
+        $game = $this->state(GameState::class);
+
+        Game::find($this->game_id)->update([
+            'status' => $game->status,
+            'board' => $game->board,
+            'valid_elephant_moves' => $game->validElephantMoves(),
+            'valid_slides' => $game->validSlides(),
+            'phase' => $game->phase,
+            'current_player_id' => $game->current_player_id,
+            'victors' => $game->victors,
+        ]);
+
+        $game->currentPlayer()->model()->update(['hand' => $game->current_player_id->hand]);
+
     }
 }

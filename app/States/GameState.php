@@ -22,13 +22,15 @@ class GameState extends State
 
     public string $phase;
 
+    public array $moves;
+
     public array $victors;
 
     const PHASE_PLACE_TILE = 'tile';
 
     const PHASE_MOVE_ELEPHANT = 'move';
 
-    public int $elephant_position = 6;
+    public int $elephant_space = 6;
 
     public function currentPlayer(): PlayerState
     {

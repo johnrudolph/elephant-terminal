@@ -13,6 +13,13 @@ class Game extends Model
 
     protected $guarded = [];
 
+    protected $casts = [
+        'board' => 'array',
+        'valid_slides' => 'array',
+        'valid_elephant_moves' => 'array',
+        'victors' => 'array',
+    ];
+
     public function state()
     {
         return GameState::load($this->id);
