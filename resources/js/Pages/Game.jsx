@@ -1,20 +1,44 @@
 import TileInput from '@/Components/Game/TileInput';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout'
-import { Head, usePage } from '@inertiajs/react'
+import { Head, usePage, router } from '@inertiajs/react'
 import { post } from '@/Utilities/http-client'
+import Space from '@/Components/Game/Space';
 
 export default function Game({ game }) {
   const board = Object.entries(game.board);
 
   const props = usePage().props;
 
+  Echo.private(`games.${props.game_id_string}`)
+    .listen('PlayerPlayedTileBroadcast', (e) => {
+        router.reload({ only: ['game'] })
+    });
+
+  Echo.private(`games.${props.game_id_string}`)
+    .listen('PlayerMovedElephantBroadcast', (e) => {
+        router.reload({ only: ['game'] })
+    });
+
   const playTile = (space, direction) => {
     post(
-      route('games.play_tile', {game: game.id}),
+      route('games.play_tile', {game: props.game_id_string}),
       {
-          game_id: game.id,
+          game_id: props.game_id_string,
           space: space,
           direction: direction,
+      },
+      props.csrf_token
+    )
+  }
+
+  const moveElephant = (space) => {
+    const [space_id, occupant] = space;
+
+    post(
+      route('games.move_elephant', {game: props.game_id_string}),
+      {
+          game_id: props.game_id_string,
+          space: space_id,
       },
       props.csrf_token
     )
@@ -29,6 +53,8 @@ export default function Game({ game }) {
         }
     >
         <Head title="Game" />
+          <p>{ props.game.phase }</p>
+          { props.current_player_id_string === props.player_id_string &&<p>your turn</p>}
           <div className="grid grid-cols-6 w-full h-full justify-center mx-auto">
             <div className="h-full justify-center items-center"></div>
             <TileInput space="1" direction="down" onClick={() => playTile(1, "down")}></TileInput>
@@ -38,30 +64,22 @@ export default function Game({ game }) {
             <div className="h-full justify-center items-center"></div>
             <TileInput space="1" direction="right" onClick={() => playTile(1, "right")}></TileInput>
             {board.slice(0, 4).map((space, index) => (
-              <div className="border border-black h-full justify-center items-center" key={index}>
-                {game.elephant_space === parseInt(space) && <p>E</p>}
-              </div>
+              <Space key={space} space={space} onClick={() => moveElephant(space)} props={props} disabled={false}></Space>
             ))}
             <TileInput space="4" direction="left" onClick={() => playTile(4, "left")}></TileInput>
             <TileInput space="5" direction="right" onClick={() => playTile(5, "right")}></TileInput>
             {board.slice(4, 8).map((space, index) => (
-              <div className="border border-black h-full justify-center items-center" key={index}>
-                {game.elephant_space === parseInt(space) && <p>E</p>}
-              </div>
+              <Space key={space} space={space} onClick={() => moveElephant(space)} props={props} disabled={false}></Space>
             ))}
             <TileInput space="8" direction="left" onClick={() => playTile(8, "left")}></TileInput>
             <TileInput space="9" direction="right" onClick={() => playTile(9, "right")}></TileInput>
             {board.slice(8, 12).map((space, index) => (
-              <div className="border border-black h-full justify-center items-center" key={index}>
-                {game.elephant_space === parseInt(space) && <p>E</p>}
-              </div>
+              <Space key={space} space={space} onClick={() => moveElephant(space)} props={props} disabled={false}></Space>
             ))}
             <TileInput space="12" direction="left" onClick={() => playTile(12, "left")}></TileInput>
             <TileInput space="13" direction="right" onClick={() => playTile(1, "right")}></TileInput>
             {board.slice(12, 16).map((space, index) => (
-              <div className="border border-black h-full justify-center items-center" key={index}>
-                {game.elephant_space === parseInt(space) && <p>E</p>}
-              </div>
+              <Space key={space} space={space} onClick={() => moveElephant(space)} props={props} disabled={false}></Space>
             ))}
             <TileInput space="16" direction="left" onClick={() => playTile(16, "left")}></TileInput>
             <div className="h-full justify-center items-center"></div>
@@ -74,3 +92,4 @@ export default function Game({ game }) {
     </AuthenticatedLayout>
   )
 }
+

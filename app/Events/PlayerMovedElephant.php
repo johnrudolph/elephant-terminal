@@ -100,7 +100,7 @@ class PlayerMovedElephant extends Event
             PlayerMovedElephant::fire(
                 game_id: $this->game_id,
                 player_id: $game->current_player_id,
-                space: $bot_elephant_move
+                space: $bot_elephant_move['space'],
             );
         }
     }

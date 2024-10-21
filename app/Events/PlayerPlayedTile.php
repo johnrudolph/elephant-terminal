@@ -101,7 +101,7 @@ class PlayerPlayedTile extends Event
             $state->board[$sliding_positions[1]] = $occupants[0];
         }
 
-        $state->board[$this->space] = $this->player_id;
+        $state->board[$this->space] = (string) $this->player_id;
 
         $state->phase = GameState::PHASE_MOVE_ELEPHANT;
     }
@@ -136,7 +136,8 @@ class PlayerPlayedTile extends Event
             'victors' => $game->victors,
         ]);
 
-        $game->currentPlayer()->model()->update(['hand' => $game->current_player_id->hand]);
-
+        Player::find($game->current_player_id)->update([
+            'hand' => PlayerState::load($game->current_player_id)->hand,
+        ]);
     }
 }

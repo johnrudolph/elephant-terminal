@@ -1,7 +1,7 @@
 export default function TileInput({
     space,
     direction,
-    onClick,
+    onClick
 }) {
     return (
         <button

@@ -2,6 +2,7 @@
 
 namespace App\States;
 
+use App\Models\Player;
 use Thunk\Verbs\State;
 
 class PlayerState extends State
@@ -15,4 +16,9 @@ class PlayerState extends State
     public ?string $bot_difficulty = null;
 
     public int $hand = 8;
+
+    public function model(): Player
+    {
+        return Player::find($this->id);
+    }
 }

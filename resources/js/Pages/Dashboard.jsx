@@ -13,7 +13,7 @@ export default function Dashboard() {
             endpoint,
             {
                 is_bot_game: true,
-                bot_difficulty: "normal",
+                bot_difficulty: "hard",
             },
             props.csrf_token
         )

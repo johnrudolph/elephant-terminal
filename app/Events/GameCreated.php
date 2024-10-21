@@ -29,6 +29,10 @@ class GameCreated extends Event
         $state->victors = [];
 
         $state->moves = [];
+
+        $state->phase = $state::PHASE_PLACE_TILE;
+
+        $state->current_player_id = $state->player_1_id;
     }
 
     public function fired()
@@ -43,7 +47,6 @@ class GameCreated extends Event
         if ($this->is_single_player) {
             PlayerCreated::fire(
                 game_id: $this->game_id,
-                // @todo do we need a bot user? does it matter?
                 user_id: 1,
                 is_host: false,
                 is_bot: true,

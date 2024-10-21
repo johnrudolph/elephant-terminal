@@ -11,7 +11,7 @@ beforeEach(function () {
 it('can move a tile', function () {
     $this->player_1->playTile(1, 'right');
 
-    expect($this->game->state()->board[1])->toBe($this->player_1->id);
+    expect($this->game->state()->board[1])->toBe((string) $this->player_1->id);
 });
 
 it('can push existing tiles to the adjacent space', function () {
@@ -26,10 +26,10 @@ it('can push existing tiles to the adjacent space', function () {
 
     $this->player_2->playTile(1, 'right');
 
-    expect($this->game->state()->board[1])->toBe($this->player_2->id);
-    expect($this->game->state()->board[2])->toBe($this->player_1->id);
-    expect($this->game->state()->board[3])->toBe($this->player_2->id);
-    expect($this->game->state()->board[4])->toBe($this->player_1->id);
+    expect($this->game->state()->board[1])->toBe((string) $this->player_2->id);
+    expect($this->game->state()->board[2])->toBe((string) $this->player_1->id);
+    expect($this->game->state()->board[3])->toBe((string) $this->player_2->id);
+    expect($this->game->state()->board[4])->toBe((string) $this->player_1->id);
 });
 
 it('pushes tiles off the board and returns them to their owners hand', function () {

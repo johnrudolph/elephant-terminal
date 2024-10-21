@@ -6,14 +6,21 @@ beforeEach(function () {
     Verbs::commitImmediately();
 });
 
-it('can move a tile', function () {
+it('can move a tile and the elephant', function () {
     $this->bootSinglePlayerGame();
 
     $this->player_1->playTile(1, 'right');
-    $this->player_1->moveElephant(2);
+    $this->game->refresh();
 
-    $this->dumpBoard();
-})->skip();
+    expect($this->game->phase)->toBe('move');
+    expect($this->game->current_player_id)->toBe((string) $this->player_1->id);
+
+    $this->player_1->moveElephant(2);
+    $this->game->refresh();
+
+    expect($this->game->phase)->toBe('tile');
+    expect($this->game->current_player_id)->toBe((string) $this->player_1->id);
+});
 
 it('blocks the player from winning', function() {
     $this->bootSinglePlayerGame();

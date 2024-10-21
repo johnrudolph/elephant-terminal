@@ -14,6 +14,7 @@ return new class extends Migration
             $table->id();
             $table->foreignIdFor(Game::class);
             $table->foreignIdFor(User::class);
+            $table->integer('hand')->default(8);
             $table->boolean('is_host');
             $table->boolean('is_bot');
             $table->timestamps();
