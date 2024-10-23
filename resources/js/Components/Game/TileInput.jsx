@@ -21,7 +21,7 @@ export default function TileInput({
 
     return (
         <button
-            className="inline-flex items-center text-center mx-auto h-16"
+            className="inline-flex items-center text-center mx-auto h-16 animate-pulse"
             onClick={onClick}
             disabled={!enabled}
         >

@@ -99,8 +99,6 @@ export default function Game({ game }) {
         }
     >
         <Head title="Game" />
-          <p>{ gameState.phase }</p>
-          { gameState.current_player_id_string === props.player_id_string &&<p>your turn</p>}
           <div className="grid grid-cols-6 w-full h-full justify-center mx-auto">
             <div className="h-full justify-center items-center"></div>
             <TileInput space="1" direction="down" props={props} gameState={gameState} onClick={() => playTile(1, "down")}></TileInput>
