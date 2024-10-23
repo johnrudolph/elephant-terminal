@@ -8,12 +8,14 @@ use Inertia\Inertia;
 use App\States\GameState;
 use App\Events\GameCreated;
 use App\Events\GameStarted;
-use App\Events\PlayerMovedElephant;
 use Illuminate\Http\Request;
 use Thunk\Verbs\Facades\Verbs;
 use App\Events\PlayerPlayedTile;
-use App\Events\PlayerPlayedTileBroadcast;
+use App\Events\PlayerMovedElephant;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Redirect;
+use App\Events\PlayerPlayedTileBroadcast;
+use App\Events\PlayerMovedElephantBroadcast;
 
 class GameController extends Controller
 {
@@ -55,27 +57,17 @@ class GameController extends Controller
 
     public function play_tile(Request $request)
     {
-        dump($request);
         $validated = (object) $request->validate([
             'game_id' => 'required|string|exists:games,id',
             'space' => 'required|int|in:1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16',
             'direction' => 'required|string|in:down,up,right,left'
         ]);
-        dump($validated);
 
         $user_id = auth()->id();
 
         $player = Game::find($validated->game_id)->players->firstWhere('user_id', $user_id);
 
-        PlayerPlayedTile::fire(
-            player_id: $player->id,
-            game_id: (int) $validated->game_id,
-            space: $validated->space,
-            direction: $validated->direction,
-        );
-
-        dump('played');
-
+        $player->playTile($validated->space, $validated->direction);
         Verbs::commit();
 
         PlayerPlayedTileBroadcast::dispatch(Game::find($validated->game_id));
@@ -91,15 +83,11 @@ class GameController extends Controller
         $user_id = auth()->id();
 
         $player = Game::find($validated->game_id)->players->firstWhere('user_id', $user_id);
-
-        dump($validated->space);
-
-        PlayerMovedElephant::fire(
-            player_id: (int) $player->id,
-            game_id: (int) $validated->game_id,
-            space: (int) $validated->space,
-        );
-
+        $player->moveElephant((int) $validated->space);
         Verbs::commit();
+
+        Log::info('elephant moved', ['data' => Game::find($validated->game_id)]);
+
+        PlayerMovedElephantBroadcast::dispatch(Game::find($validated->game_id));
     }
 }

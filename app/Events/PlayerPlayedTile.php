@@ -7,6 +7,7 @@ use App\Models\Player;
 use Thunk\Verbs\Event;
 use App\States\GameState;
 use App\States\PlayerState;
+use App\Events\PlayerPlayedTileBroadcast;
 use Thunk\Verbs\Attributes\Autodiscovery\StateId;
 
 class PlayerPlayedTile extends Event

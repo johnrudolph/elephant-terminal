@@ -34,4 +34,14 @@ class PlayerMovedElephantBroadcast implements ShouldBroadcast
             new PrivateChannel('games.'.$this->game->id),
         ];
     }
+
+    public function broadcastWith(): array
+    {
+        return [
+            'new_elephant_space' => $this->game->elephant_space,
+            'current_player_id_string' => (string) $this->game->current_player_id,
+            'valid_elephant_moves' => $this->game->valid_elephant_moves,
+            'valid_slides' => $this->game->valid_slides,
+        ];
+    }
 }

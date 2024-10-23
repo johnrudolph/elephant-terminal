@@ -6,6 +6,7 @@ trait BotLogic
 {
     public function selectBotTileMove(array $board)
     {
+        dump('hello');
         $possible_moves_ranked = collect($this->validSlides($board))
             ->shuffle()
             ->map(fn ($slide) => [
@@ -15,11 +16,15 @@ trait BotLogic
             ])
             ->sortByDesc('score');
 
-        $this->currentPlayer()->bot_difficulty === 'easy'
-            ? $possible_moves_ranked = $possible_moves_ranked->take(6)
-            : ($this->currentPlayer()->bot_difficulty === 'normal'
-                ? $possible_moves_ranked = $possible_moves_ranked->take(3)
-                : $possible_moves_ranked = $possible_moves_ranked->take(1));
+        // $this->currentPlayer()->bot_difficulty === 'easy'
+        //     ? $possible_moves_ranked = $possible_moves_ranked->take(6)
+        //     : ($this->currentPlayer()->bot_difficulty === 'normal'
+        //         ? $possible_moves_ranked = $possible_moves_ranked->take(3)
+        //         : $possible_moves_ranked = $possible_moves_ranked->take(1));
+
+        $possible_moves_ranked = $possible_moves_ranked->take(1);
+
+        dump($possible_moves_ranked);
 
         return $possible_moves_ranked
             ->random();
