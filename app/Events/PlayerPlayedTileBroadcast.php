@@ -34,4 +34,16 @@ class PlayerPlayedTileBroadcast implements ShouldBroadcast
             new PrivateChannel('games.'.$this->game->id),
         ];
     }
+
+    public function broadcastWith(): array
+    {
+        return [
+            'new_board' => $this->game->board,
+            'current_player_id_string' => (string) $this->game->current_player_id,
+            'valid_elephant_moves' => $this->game->valid_elephant_moves,
+            'valid_slides' => $this->game->valid_slides,
+            'phase' => $this->game->phase,
+            'moves' => $this->game->moves,
+        ];
+    }
 }

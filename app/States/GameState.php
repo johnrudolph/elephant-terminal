@@ -2,6 +2,7 @@
 
 namespace App\States;
 
+use App\Models\Game;
 use App\States\Traits\BoardLogic;
 use App\States\Traits\BotLogic;
 use Thunk\Verbs\State;
@@ -31,6 +32,11 @@ class GameState extends State
     const PHASE_MOVE_ELEPHANT = 'move';
 
     public int $elephant_space = 6;
+
+    public function model(): Game
+    {
+        return Game::find($this->id);
+    }
 
     public function currentPlayer(): PlayerState
     {

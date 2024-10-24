@@ -3,6 +3,7 @@
 namespace App\Events;
 
 use App\Models\Game;
+use App\Models\Move;
 use Thunk\Verbs\Event;
 use App\States\GameState;
 use App\States\PlayerState;
@@ -18,6 +19,10 @@ class PlayerMovedElephant extends Event
     public int $player_id;
 
     public int $space;
+
+    public ?array $bot_move_scores = null;
+
+    public int $elephant_space_before;
 
     public function authorize()
     {
@@ -92,6 +97,17 @@ class PlayerMovedElephant extends Event
             'elephant_space' => $game->elephant_space,
             'phase' => $game->phase,
             'current_player_id' => $game->current_player_id,
+        ]);
+
+        Move::create([
+            'game_id' => $this->game_id,
+            'player_id' => $this->player_id,
+            'type' => 'elephant',
+            'board_before' => $game->board,
+            'board_after' => $game->board,
+            'elephant_before' => $this->elephant_space_before,
+            'elephant_after' => $game->elephant_space,
+            'bot_move_scores' => $this->bot_move_scores,
         ]);
     }
 }

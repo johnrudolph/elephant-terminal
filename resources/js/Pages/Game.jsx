@@ -8,45 +8,47 @@ import React, { useState, useEffect } from 'react';
 export default function Game({ game }) {
   const props = usePage().props;
 
-  const board_array = Object.entries(game.board);
-
   const [gameState, setGameState] = useState({
-    board: board_array,
+    board: Object.entries(props.game.board),
     phase: props.game.phase,
     current_player: props.current_player_id_string,
     elephant_space: props.game.elephant_space,
     valid_slides: props.game.valid_slides,
     valid_elephant_moves: props.game.valid_elephant_moves,
+    moves: Object.entries(props.moves),
   });
 
   Echo.private(`games.${props.game_id_string}`)
     .listen('PlayerPlayedTileBroadcast', (e) => {
-        console.log('tile played on server');
+        console.log(e);
+
         setGameState((prevState) => ({
           ...prevState,
-          elephant_space: e.game.elephant_space,
-          current_player: e.game.current_player_id.toString(),
-          valid_slides: e.game.valid_slides,
-          valid_elephant_moves: e.game.valid_elephant_moves,
-          board: Object.entries(e.game.board),
-          phase: e.game.phase,
+          current_player: e.current_player_id,
+          valid_slides: e.valid_slides,
+          valid_elephant_moves: e.valid_elephant_moves,
+          board: Object.entries(e.new_board),
+          phase: e.phase,
+          moves: Object.entries(e.moves),
         }));
-
-        console.log(gameState.board);
+        console.log('tile played on server');
     });
 
   Echo.private(`games.${props.game_id_string}`)
     .listen('PlayerMovedElephantBroadcast', (e) => {
-        console.log('elephant moved on server');
+        console.log(e);
+
         setGameState((prevState) => ({
           ...prevState,
-          elephant_space: e.game.elephant_space,
-          current_player: e.game.current_player_id.toString(),
-          valid_slides: e.game.valid_slides,
-          valid_elephant_moves: e.game.valid_elephant_moves,
-          board: Object.entries(e.game.board),
-          phase: e.game.phase,
+          elephant_space: e.new_elephant_space,
+          current_player: e.current_player_id_string,
+          valid_slides: e.valid_slides,
+          valid_elephant_moves: e.valid_elephant_moves,
+          phase: e.phase,
+          board: Object.entries(e.board),
+          moves: Object.entries(e.moves),
         }));
+        console.log('elephant moved on server');
     });
 
   const playTile = (space, direction) => {

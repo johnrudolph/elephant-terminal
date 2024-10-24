@@ -2,12 +2,13 @@
 
 namespace App\Models;
 
-use App\Events\PlayerMovedElephant;
-use App\Events\PlayerPlayedTile;
+use App\Models\Move;
 use App\States\PlayerState;
+use App\Events\PlayerPlayedTile;
+use App\Events\PlayerMovedElephant;
 use Glhd\Bits\Database\HasSnowflakes;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Player extends Model
 {
@@ -30,43 +31,59 @@ class Player extends Model
         return $this->belongsTo(Game::class);
     }
 
-    public function playTile(int $space, string $direction)
+    public function moves()
     {
+        return $this->hasMany(Move::class);
+    }
+
+    public function playTile(?int $space = null, ?string $direction = null)
+    {
+        $game = $this->game->state();
+
+        if ($this->is_bot) {
+            $bot_move_scores = $game->selectBotTileMove($game->board)->toArray();
+            $space = $bot_move_scores[0]['space'];
+            $direction = $bot_move_scores[0]['direction'];
+        } else {
+            $bot_move_scores = null;
+        }
+
         PlayerPlayedTile::fire(
             game_id: $this->game->id,
             player_id: $this->id,
             space: $space,
             direction: $direction,
+            bot_move_scores: $bot_move_scores ?? null,
+            board_before_slide: $game->board,
         );
     }
 
-    public function moveElephant(int $space)
+    public function moveElephant(?int $space = null)
     {
+        $game = $this->game->state();
+
+        if ($this->is_bot) {
+            $bot_move_scores = $game->selectBotElephantMove($game->board)->toArray();
+            $space = $bot_move_scores[0]['space'];
+        } else {
+            $bot_move_scores = null;
+        }
+
         PlayerMovedElephant::fire(
             game_id: $this->game->id,
             player_id: $this->id,
             space: $space,
+            bot_move_scores: $bot_move_scores ?? null,
+            elephant_space_before: $game->elephant_space,
         );
 
         $game = $this->game->state();
 
-        if ($game->currentPlayer()->is_bot) {
-            $bot_tile_move = $game->selectBotTileMove($game->board);
+        $next_player = $game->currentPlayer()->model();
 
-            PlayerPlayedTile::fire(
-                game_id: $game->id,
-                player_id: $game->current_player_id,
-                space: $bot_tile_move['space'],
-                direction: $bot_tile_move['direction']
-            );
-
-            $bot_elephant_move = $game->selectBotElephantMove($game->board);
-
-            PlayerMovedElephant::fire(
-                game_id: $game->id,
-                player_id: $game->current_player_id,
-                space: $bot_elephant_move['space'],
-            );
+        if ($next_player->is_bot) {
+            $next_player->playTile();
+            $next_player->moveElephant();
         }
     }
 }

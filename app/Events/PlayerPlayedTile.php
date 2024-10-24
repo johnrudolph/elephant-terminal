@@ -3,11 +3,11 @@
 namespace App\Events;
 
 use App\Models\Game;
+use App\Models\Move;
 use App\Models\Player;
 use Thunk\Verbs\Event;
 use App\States\GameState;
 use App\States\PlayerState;
-use App\Events\PlayerPlayedTileBroadcast;
 use Thunk\Verbs\Attributes\Autodiscovery\StateId;
 
 class PlayerPlayedTile extends Event
@@ -21,6 +21,10 @@ class PlayerPlayedTile extends Event
     public int $space;
 
     public string $direction;
+
+    public ?array $bot_move_scores = null;
+
+    public array $board_before_slide;
 
     public function authorize()
     {
@@ -79,7 +83,6 @@ class PlayerPlayedTile extends Event
             'player_id' => $this->player_id,
             'space' => $this->space,
             'direction' => $this->direction,
-            // @todo it would be cool to include data about what else slid, so we could re-animate on the frontend
         ];
 
         $sliding_positions = $state->slidingPositions($this->space, $this->direction);
@@ -105,22 +108,18 @@ class PlayerPlayedTile extends Event
         $state->board[$this->space] = (string) $this->player_id;
 
         $state->phase = GameState::PHASE_MOVE_ELEPHANT;
+
+        $both_player_hands_are_empty = $state->currentPlayer()->hand === 0 && $state->idlePlayer()->hand === 0;
+
+        if ($state->victor($state->board) || $both_player_hands_are_empty) {
+            $state->status = 'complete';
+            $state->victors = $state->victor($state->board);
+        }
     }
 
     public function applyToPlayer(PlayerState $state)
     {
         $state->hand--;
-    }
-
-    public function fired()
-    {
-        $game = $this->state(GameState::class);
-
-        $both_player_hands_are_empty = $game->currentPlayer()->hand === 0 && $game->idlePlayer()->hand === 0;
-
-        if ($game->victor($game->board) || $both_player_hands_are_empty) {
-            GameEnded::fire(game_id: $this->game_id);
-        }
     }
 
     public function handle()
@@ -139,6 +138,18 @@ class PlayerPlayedTile extends Event
 
         Player::find($game->current_player_id)->update([
             'hand' => PlayerState::load($game->current_player_id)->hand,
+        ]);
+
+        Move::create([
+            'game_id' => $this->game_id,
+            'player_id' => $this->player_id,
+            'type' => 'tile',
+            'board_before' => $this->board_before_slide,
+            'board_after' => $game->board,
+            'elephant_before' => $game->elephant_space,
+            'elephant_after' => $game->elephant_space,
+            'bot_move_scores' => $this->bot_move_scores,
+            'initial_slide' => ['space' => $this->space, 'direction' => $this->direction],
         ]);
     }
 }

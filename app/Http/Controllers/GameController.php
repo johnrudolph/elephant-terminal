@@ -52,6 +52,7 @@ class GameController extends Controller
             'current_player_id_string' => (string) $game->current_player_id,
             'player_id_string' => (string) $state->player_1_id,
             'opponent_id_string' => (string) $state->player_2_id,
+            'moves' => (array) $state->model()->moves,
         ]);
     }
 
@@ -85,8 +86,6 @@ class GameController extends Controller
         $player = Game::find($validated->game_id)->players->firstWhere('user_id', $user_id);
         $player->moveElephant((int) $validated->space);
         Verbs::commit();
-
-        Log::info('elephant moved', ['data' => Game::find($validated->game_id)]);
 
         PlayerMovedElephantBroadcast::dispatch(Game::find($validated->game_id));
     }

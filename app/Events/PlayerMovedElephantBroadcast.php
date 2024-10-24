@@ -18,7 +18,7 @@ class PlayerMovedElephantBroadcast implements ShouldBroadcast
     /**
      * Create a new event instance.
      */
-    public function __construct(public readonly Game $game)
+    public function __construct(public readonly Game $game, Move $move)
     {
         //
     }
@@ -37,11 +37,16 @@ class PlayerMovedElephantBroadcast implements ShouldBroadcast
 
     public function broadcastWith(): array
     {
+
+
         return [
             'new_elephant_space' => $this->game->elephant_space,
             'current_player_id_string' => (string) $this->game->current_player_id,
             'valid_elephant_moves' => $this->game->valid_elephant_moves,
             'valid_slides' => $this->game->valid_slides,
+            'phase' => $this->game->phase,
+            'new_move' => $this->move,
+            'board' => $this->game->board,
         ];
     }
 }

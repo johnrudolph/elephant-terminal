@@ -2,10 +2,11 @@
 
 namespace App\Models;
 
+use App\Models\Move;
 use App\States\GameState;
 use Glhd\Bits\Database\HasSnowflakes;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Game extends Model
 {
@@ -28,5 +29,10 @@ class Game extends Model
     public function players()
     {
         return $this->hasMany(Player::class);
+    }
+
+    public function moves()
+    {
+        return $this->hasMany(Move::class);
     }
 }
