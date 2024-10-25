@@ -12,11 +12,15 @@ export default function Space({
 
     const is_move_phase = gameState.phase === 'move';
 
-    const enabled = is_valid_move && is_player_turn && is_move_phase;
+    const game_is_active = gameState.status === 'active';
+
+    const enabled = is_valid_move && is_player_turn && is_move_phase && game_is_active;
 
     return (
         <button
-            className="border border-black h-full justify-center items-center"
+            className={`border border-black h-full justify-center items-center ${
+                enabled ? 'bg-yellow-100 animate-pulse' : 'bg-gray-100'
+            }`}
             disabled={!enabled}
             onClick={onClick}
         >

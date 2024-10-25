@@ -17,7 +17,9 @@ export default function TileInput({
 
     const is_tile_phase = gameState.phase === 'tile';
 
-    const enabled = is_valid_slide && is_player_turn && is_tile_phase;
+    const game_is_active = gameState.status === 'active';
+
+    const enabled = is_valid_slide && is_player_turn && is_tile_phase && game_is_active;
 
     return (
         <button

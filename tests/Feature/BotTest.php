@@ -20,6 +20,8 @@ it('can move a tile and the elephant', function () {
 
     expect($this->game->phase)->toBe('tile');
     expect($this->game->current_player_id)->toBe((string) $this->player_1->id);
+
+    dd($this->game->moves->pluck('bot_move_scores'));
 });
 
 it('blocks the player from winning', function() {

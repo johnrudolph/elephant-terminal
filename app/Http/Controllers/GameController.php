@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Game;
+use App\Models\Move;
 use App\Models\User;
 use Inertia\Inertia;
 use App\States\GameState;
@@ -39,7 +40,6 @@ class GameController extends Controller
         Verbs::commit();
 
         return to_route('games.show', $game_id);
-        // return Inertia::location(route('games.show', ['game' => $game_id]));
     }
 
     public function show(Game $game)
@@ -52,7 +52,7 @@ class GameController extends Controller
             'current_player_id_string' => (string) $game->current_player_id,
             'player_id_string' => (string) $state->player_1_id,
             'opponent_id_string' => (string) $state->player_2_id,
-            'moves' => (array) $state->model()->moves,
+            'moves' => (array) $state->model()->moves->fresh(),
         ]);
     }
 
@@ -66,12 +66,16 @@ class GameController extends Controller
 
         $user_id = auth()->id();
 
-        $player = Game::find($validated->game_id)->players->firstWhere('user_id', $user_id);
+        $game = Game::find($validated->game_id);
+
+        $player = $game->players->firstWhere('user_id', $user_id);
 
         $player->playTile($validated->space, $validated->direction);
         Verbs::commit();
 
-        PlayerPlayedTileBroadcast::dispatch(Game::find($validated->game_id));
+        $move = $player->moves->last();
+
+        PlayerPlayedTileBroadcast::dispatch($game->fresh(), $move);
     }
 
     public function move_elephant(Request $request)
@@ -83,10 +87,14 @@ class GameController extends Controller
 
         $user_id = auth()->id();
 
-        $player = Game::find($validated->game_id)->players->firstWhere('user_id', $user_id);
+        $game = Game::find($validated->game_id);
+
+        $player = $game->players->firstWhere('user_id', $user_id);
         $player->moveElephant((int) $validated->space);
         Verbs::commit();
 
-        PlayerMovedElephantBroadcast::dispatch(Game::find($validated->game_id));
+        $move = $player->moves->last();
+
+        PlayerMovedElephantBroadcast::dispatch($game->fresh(), $move);
     }
 }

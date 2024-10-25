@@ -3,6 +3,7 @@
 namespace App\Events;
 
 use App\Models\Game;
+use App\Models\Move;
 use Illuminate\Broadcasting\Channel;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Broadcasting\PrivateChannel;
@@ -18,7 +19,7 @@ class PlayerPlayedTileBroadcast implements ShouldBroadcast
     /**
      * Create a new event instance.
      */
-    public function __construct(public readonly Game $game)
+    public function __construct(public Game $game, public Move $move)
     {
         //
     }
@@ -38,12 +39,7 @@ class PlayerPlayedTileBroadcast implements ShouldBroadcast
     public function broadcastWith(): array
     {
         return [
-            'new_board' => $this->game->board,
-            'current_player_id_string' => (string) $this->game->current_player_id,
-            'valid_elephant_moves' => $this->game->valid_elephant_moves,
-            'valid_slides' => $this->game->valid_slides,
-            'phase' => $this->game->phase,
-            'moves' => $this->game->moves,
+            'move_id' => $this->move->id,
         ];
     }
 }

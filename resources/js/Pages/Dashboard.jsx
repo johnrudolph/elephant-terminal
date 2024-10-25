@@ -1,21 +1,17 @@
 import PrimaryButton from '@/Components/PrimaryButton';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head, Link, router, usePage} from '@inertiajs/react';
-import { post } from '@/Utilities/http-client';
+import { Head, router, usePage} from '@inertiajs/react';
 
 export default function Dashboard() {
     const props = usePage().props;
 
     const startBotGame = () => {
-        const endpoint = route('games.create');
-
-        post(
-            endpoint,
+        router.post(
+            route('games.create'),
             {
                 is_bot_game: true,
                 bot_difficulty: "hard",
             },
-            props.csrf_token
         )
     };
 

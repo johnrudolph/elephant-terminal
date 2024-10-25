@@ -16,40 +16,33 @@ export default function Game({ game }) {
     valid_slides: props.game.valid_slides,
     valid_elephant_moves: props.game.valid_elephant_moves,
     moves: Object.entries(props.moves),
+    status: props.game.status,
   });
 
   Echo.private(`games.${props.game_id_string}`)
     .listen('PlayerPlayedTileBroadcast', (e) => {
-        console.log(e);
-
-        setGameState((prevState) => ({
-          ...prevState,
-          current_player: e.current_player_id,
-          valid_slides: e.valid_slides,
-          valid_elephant_moves: e.valid_elephant_moves,
-          board: Object.entries(e.new_board),
-          phase: e.phase,
-          moves: Object.entries(e.moves),
-        }));
-        console.log('tile played on server');
+      refresh_game(e.move_id);
     });
 
   Echo.private(`games.${props.game_id_string}`)
     .listen('PlayerMovedElephantBroadcast', (e) => {
-        console.log(e);
-
-        setGameState((prevState) => ({
-          ...prevState,
-          elephant_space: e.new_elephant_space,
-          current_player: e.current_player_id_string,
-          valid_slides: e.valid_slides,
-          valid_elephant_moves: e.valid_elephant_moves,
-          phase: e.phase,
-          board: Object.entries(e.board),
-          moves: Object.entries(e.moves),
-        }));
-        console.log('elephant moved on server');
+      refresh_game(e.move_id);
     });
+
+  const refresh_game = (move_id) => {
+    router.get(
+      route('games.show', {game: props.game_id_string}),
+    );
+
+    console.log(gameState.moves[0][1]);
+  }
+
+  const addOrConfirmMove = (move) => {
+    setGameState((prevState) => ({
+      ...prevState,
+      moves: prevState.moves.push(move),
+    }));
+  };
 
   const playTile = (space, direction) => {
     const updatedBoard = [...gameState.board];
