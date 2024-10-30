@@ -4,6 +4,7 @@ import { Head, usePage, router } from '@inertiajs/react'
 import { post } from '@/Utilities/http-client'
 import Space from '@/Components/Game/Space';
 import React, { useState, useEffect } from 'react';
+import { affected_sliding_spaces } from '@/Utilities/board-logic'
 
 export default function Game({ game }) {
   const props = usePage().props;
@@ -15,8 +16,24 @@ export default function Game({ game }) {
     elephant_space: props.game.elephant_space,
     valid_slides: props.game.valid_slides,
     valid_elephant_moves: props.game.valid_elephant_moves,
-    moves: Object.entries(props.moves),
     status: props.game.status,
+  });
+
+  const moves = Object.entries(props.moves)[0][1].map((move) => {
+    let spaces = move.type === 'elephant'
+      ? [move.elephant_after]
+      : affected_sliding_spaces(move.initial_slide['space'], move.initial_slide['direction'], gameState.board, props.player_id_string)
+
+    return {
+      spaces: spaces,
+      direction: move.direction,
+      type: move.type,
+    };
+  });
+
+  const [animationState, setAnimationState] = useState({
+    previous_moves: moves,
+    queued_moves: [], 
   });
 
   Echo.private(`games.${props.game_id_string}`)
@@ -33,16 +50,7 @@ export default function Game({ game }) {
     router.get(
       route('games.show', {game: props.game_id_string}),
     );
-
-    console.log(gameState.moves[0][1]);
   }
-
-  const addOrConfirmMove = (move) => {
-    setGameState((prevState) => ({
-      ...prevState,
-      moves: prevState.moves.push(move),
-    }));
-  };
 
   const playTile = (space, direction) => {
     const updatedBoard = [...gameState.board];
@@ -52,6 +60,17 @@ export default function Game({ game }) {
       ...prevState,
       board: updatedBoard,
       phase: 'move',
+    }));
+
+    const newMove = {
+      spaces: affected_sliding_spaces(space, direction, gameState.board, props.player_id_string),
+      direction: direction,
+      type: 'tile',
+    };
+
+    setAnimationState((prevAnimationState) => ({
+      ...prevAnimationState,
+      queued_moves: [...prevAnimationState.queued_moves, newMove],
     }));
 
     post(
@@ -94,7 +113,7 @@ export default function Game({ game }) {
         }
     >
         <Head title="Game" />
-          <div className="grid grid-cols-6 w-full h-full justify-center mx-auto">
+          <div className="grid grid-cols-6 w-96 h-full justify-center mx-auto">
             <div className="h-full justify-center items-center"></div>
             <TileInput space="1" direction="down" props={props} gameState={gameState} onClick={() => playTile(1, "down")}></TileInput>
             <TileInput space="2" direction="down" props={props} gameState={gameState} onClick={() => playTile(2, "down")}></TileInput>
@@ -103,22 +122,50 @@ export default function Game({ game }) {
             <div className="h-full justify-center items-center"></div>
             <TileInput space="1" direction="right" props={props} gameState={gameState} onClick={() => playTile(1, "right")}></TileInput>
             {gameState.board.slice(0, 4).map((space, index) => (
-              <Space key={space} space={space} gameState={gameState} onClick={() => moveElephant(space)} props={props} disabled={false}></Space>
+              <Space 
+                key={space} 
+                space={space} 
+                animationState = {animationState} 
+                gameState={gameState} 
+                onClick={() => moveElephant(space)} 
+                props={props} 
+              ></Space>
             ))}
             <TileInput space="4" direction="left" props={props} gameState={gameState} onClick={() => playTile(4, "left")}></TileInput>
             <TileInput space="5" direction="right" props={props} gameState={gameState} onClick={() => playTile(5, "right")}></TileInput>
             {gameState.board.slice(4, 8).map((space, index) => (
-              <Space key={space} space={space} gameState={gameState} onClick={() => moveElephant(space)} props={props} disabled={false}></Space>
+              <Space 
+                key={space} 
+                space={space} 
+                animationState = {animationState} 
+                gameState={gameState} 
+                onClick={() => moveElephant(space)} 
+                props={props} 
+              ></Space>
             ))}
             <TileInput space="8" direction="left" props={props} gameState={gameState} onClick={() => playTile(8, "left")}></TileInput>
             <TileInput space="9" direction="right" props={props} gameState={gameState} onClick={() => playTile(9, "right")}></TileInput>
             {gameState.board.slice(8, 12).map((space, index) => (
-              <Space key={space} space={space} gameState={gameState} onClick={() => moveElephant(space)} props={props} disabled={false}></Space>
+              <Space 
+                key={space} 
+                space={space} 
+                animationState = {animationState} 
+                gameState={gameState} 
+                onClick={() => moveElephant(space)} 
+                props={props} 
+              ></Space>
             ))}
             <TileInput space="12" direction="left" props={props} gameState={gameState} onClick={() => playTile(12, "left")}></TileInput>
             <TileInput space="13" direction="right" props={props} gameState={gameState} onClick={() => playTile(1, "right")}></TileInput>
             {gameState.board.slice(12, 16).map((space, index) => (
-              <Space key={space} space={space} gameState={gameState} onClick={() => moveElephant(space)} props={props} disabled={false}></Space>
+              <Space 
+                key={space} 
+                space={space} 
+                animationState = {animationState} 
+                gameState={gameState} 
+                onClick={() => moveElephant(space)} 
+                props={props} 
+              ></Space>
             ))}
             <TileInput space="16" direction="left" props={props} gameState={gameState} onClick={() => playTile(16, "left")}></TileInput>
             <div className="h-full justify-center items-center"></div>

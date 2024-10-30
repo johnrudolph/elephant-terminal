@@ -8,11 +8,15 @@ trait BotLogic
     {
         $possible_moves_ranked = collect($this->validSlides($board))
             ->shuffle()
-            ->map(fn ($slide) => [
-                'space' => $slide['space'],
-                'direction' => $slide['direction'],
-                'score' => $this->boardScore($this->hypotheticalBoardAfterSlide($slide['space'], $slide['direction'], $board)),
-            ])
+            ->map(function ($slide) use($board) {
+                $score = $this->boardScore($this->hypotheticalBoardAfterSlide($slide['space'], $slide['direction'], $board));
+
+                return [
+                    'space' => $slide['space'],
+                    'direction' => $slide['direction'],
+                    'score' => $score,
+                ];
+            })
             ->sortByDesc('score');
 
         return $possible_moves_ranked;
@@ -57,7 +61,7 @@ trait BotLogic
             $hypothetical_board[$second_space] = $board[$space];
         }
 
-        $hypothetical_board[$space] = $this->player_2_id;
+        $hypothetical_board[$space] = (string) $this->player_2_id;
 
         return $hypothetical_board;
     }
@@ -82,8 +86,8 @@ trait BotLogic
             $score -= 1000;
         }
 
-        if(collect($this->victor($hypothetical_board))->contains($this->player_1_id)) {
-            $score += 1000;
+        if(collect($this->victor($hypothetical_board))->contains($this->player_2_id)) {
+            $score += 1000000000;
         }
 
         if($this->botHypotheticallyRunsOutOfTiles($hypothetical_board)) {
@@ -93,14 +97,14 @@ trait BotLogic
         return $score;
     }
 
-    public function spacesOccupiedBy(int $player_id, array $hypothetical_board)
+    public function spacesOccupiedBy(string $player_id, array $hypothetical_board)
     {
         return collect($hypothetical_board)
             ->filter(fn ($occupant) => $occupant === $player_id)
             ->keys();
     }
 
-    public function numberOfAdjacentTilesFor(int $player_id, array $hypothetical_board)
+    public function numberOfAdjacentTilesFor(string $player_id, array $hypothetical_board)
     {
         return $this->spacesOccupiedBy($player_id, $hypothetical_board)
             ->map(fn ($space) => collect($this->adjacentSpaces($space))
@@ -117,7 +121,7 @@ trait BotLogic
             ->count() === 8;
     }
 
-    public function hypotheticallyHasCheck(int $player_id, array $hypothetical_board)
+    public function hypotheticallyHasCheck(string $player_id, array $hypothetical_board)
     {
         // @todo modify with "triangle of 3 that I can't block with elephant"
 

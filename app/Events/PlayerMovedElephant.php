@@ -98,6 +98,15 @@ class PlayerMovedElephant extends Event
             'phase' => $game->phase,
             'current_player_id' => $game->current_player_id,
         ]);
+        
+        $elephant_move_direction = match ($this->elephant_space_before - $game->elephant_space) {
+            0 => 'none',
+            1 => 'left',
+            -1 => 'right',
+            4 => 'up',
+            -4 => 'down',
+            default => 'error' // Optionally handle unexpected values
+        };
 
         Move::create([
             'game_id' => $this->game_id,

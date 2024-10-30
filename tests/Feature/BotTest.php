@@ -20,62 +20,57 @@ it('can move a tile and the elephant', function () {
 
     expect($this->game->phase)->toBe('tile');
     expect($this->game->current_player_id)->toBe((string) $this->player_1->id);
-
-    dd($this->game->moves->pluck('bot_move_scores'));
 });
 
 it('blocks the player from winning', function() {
     $this->bootSinglePlayerGame();
+    $this->player_1->playTile(16, 'up');
+    $this->player_1->moveElephant(7, true);
+    $this->player_2->playTile(1, 'right');
+    $this->player_2->moveElephant(7, true);
+    $this->player_1->playTile(16, 'up');
+    $this->player_1->moveElephant(7, true);
+    $this->player_2->playTile(1, 'right');
+    $this->player_2->moveElephant(7, true);
+    $this->player_1->playTile(16, 'left');
+    $this->player_1->moveElephant(7, true);
+    $this->player_2->playTile();
 
-    $fake_board = [
-        1 => null,
-        2 => null,
-        3 => null,
-        4 => null,
-        5 => null,
-        6 => null,
-        7 => null,
-        8 => null,
-        9 => null,
-        10 => null,
-        11 => null,
-        12 => $this->player_1->id,
-        13 => null,
-        14 => null,
-        15 => $this->player_1->id,
-        16 => $this->player_1->id,
-    ];
-
-    $bot_move = $this->game->state()->selectBotTileMove($fake_board);
-
-    expect(collect([12, 15, 16]))->toContain($bot_move['space']);
+    expect($this->game->fresh()->board[16])
+        ->toBe((string) $this->player_2->id);
 });
 
 it('wins if it can', function() {
     $this->bootSinglePlayerGame();
+    $this->player_1->playTile(16, 'up');
+    $this->player_1->moveElephant(7, true);
+    $this->player_2->playTile(1, 'down');
+    $this->player_2->moveElephant(7, true);
+    $this->player_1->playTile(16, 'up');
+    $this->player_1->moveElephant(7, true);
+    $this->player_2->playTile(1, 'down');
+    $this->player_2->moveElephant(7, true);
+    $this->player_1->playTile(4, 'down');
+    $this->player_1->moveElephant(7, true);
+    $this->player_2->playTile(2, 'down');
+    $this->player_2->moveElephant(7, true);
+    $this->player_1->playTile(15, 'up');
+    $this->player_1->moveElephant(7, true);
+    $this->player_2->playTile();
 
-    $fake_board = [
-        1 => null,
-        2 => null,
-        3 => null,
-        4 => null,
-        5 => null,
-        6 => null,
-        7 => null,
-        8 => null,
-        9 => null,
-        10 => null,
-        11 => null,
-        12 => $this->player_2->id,
-        13 => null,
-        14 => null,
-        15 => $this->player_2->id,
-        16 => $this->player_2->id,
-    ];
+    // player has check, but bot can just win the game
 
-    $bot_move = $this->game->state()->selectBotTileMove($fake_board);
+    expect($this->game->fresh()->board[1])
+        ->toBe((string) $this->player_2->id);
 
-    expect(collect([12, 15]))->toContain($bot_move['space']);
+    expect($this->game->fresh()->board[2])
+        ->toBe((string) $this->player_2->id);
+
+    expect($this->game->fresh()->board[5])
+        ->toBe((string) $this->player_2->id);
+
+    expect($this->game->fresh()->board[6])
+        ->toBe((string) $this->player_2->id);
 });
 
 it('maximizes its adjacent tiles', function() {

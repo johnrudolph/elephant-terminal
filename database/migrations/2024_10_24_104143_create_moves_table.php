@@ -18,6 +18,7 @@ return new class extends Migration
             $table->json('board_after');
             $table->integer('elephant_before');
             $table->integer('elephant_after');
+            $table->text('elephant_move_direction')->nullable();
             $table->json('bot_move_scores')->nullable();
             $table->timestamps();
         });

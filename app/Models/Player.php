@@ -40,10 +40,11 @@ class Player extends Model
     {
         $game = $this->game->state();
 
-        if ($this->is_bot) {
+        if ($this->is_bot && !$space && !$direction) {
             $bot_move_scores = $game->selectBotTileMove($game->board)->toArray();
-            $space = $bot_move_scores[0]['space'];
-            $direction = $bot_move_scores[0]['direction'];
+            $move = array_slice($bot_move_scores, 0, 1)[0];
+            $space = $move['space'];
+            $direction = $move['direction'];
         } else {
             $bot_move_scores = null;
         }
@@ -58,13 +59,14 @@ class Player extends Model
         );
     }
 
-    public function moveElephant(?int $space = null)
+    public function moveElephant(?int $space = null, ?bool $skip_bot_phase = false)
     {
         $game = $this->game->state();
 
-        if ($this->is_bot) {
+        if ($this->is_bot && !$space) {
             $bot_move_scores = $game->selectBotElephantMove($game->board)->toArray();
-            $space = $bot_move_scores[0]['space'];
+            $move = array_slice($bot_move_scores, 0, 1)[0];
+            $space = $move['space'];
         } else {
             $bot_move_scores = null;
         }
@@ -76,6 +78,11 @@ class Player extends Model
             bot_move_scores: $bot_move_scores ?? null,
             elephant_space_before: $game->elephant_space,
         );
+
+        // this exists for testing purposes
+        if ($skip_bot_phase) {
+            return;
+        }
 
         $game = $this->game->state();
 
