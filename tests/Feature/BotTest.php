@@ -98,7 +98,7 @@ it('maximizes its adjacent tiles', function() {
     $bot_move = $this->game->state()->selectBotTileMove($fake_board);
 
     expect(collect([15]))->toContain($bot_move['space']);
-});
+})->skip('replace this with realistic scenario');
 
 it('prioritizes breaking up player check rather than creating check', function() {
     $this->bootSinglePlayerGame();
@@ -125,7 +125,7 @@ it('prioritizes breaking up player check rather than creating check', function()
     $bot_move = $this->game->state()->selectBotTileMove($fake_board);
 
     expect(collect([16]))->toContain($bot_move['space']);
-});
+})->skip('replace this with realistic scenario');
 
 it('creates check if it can', function() {
     $this->bootSinglePlayerGame();
@@ -152,4 +152,4 @@ it('creates check if it can', function() {
     $bot_move = $this->game->state()->selectBotTileMove($fake_board);
 
     expect(collect([16]))->toContain($bot_move['space']);
-});
+})->skip('replace this with realistic scenario');

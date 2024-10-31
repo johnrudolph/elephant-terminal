@@ -53,6 +53,16 @@ class GameController extends Controller
             'player_id_string' => (string) $state->player_1_id,
             'opponent_id_string' => (string) $state->player_2_id,
             'moves' => (array) $state->model()->moves->fresh(),
+            'players' => $game->players->map(function($player) {
+                return [
+                    'id' => (string) $player->id,
+                    'user_id' => $player->user_id,
+                    'is_bot' => $player->is_bot,
+                    'victory_shape' => $player->victory_shape,
+                    'hand' => $player->hand,
+                    'is_user' => $player->user_id === auth()->id(),
+                ];
+            }),
         ]);
     }
 

@@ -3,9 +3,10 @@
 namespace App\States;
 
 use App\Models\Game;
-use App\States\Traits\BoardLogic;
-use App\States\Traits\BotLogic;
 use Thunk\Verbs\State;
+use App\States\Traits\BotLogic;
+use App\States\Traits\BoardLogic;
+use Illuminate\Support\Collection;
 
 class GameState extends State
 {
@@ -36,6 +37,12 @@ class GameState extends State
     public function model(): Game
     {
         return Game::find($this->id);
+    }
+
+    public function players(): Collection
+    {
+        return collect([$this->player_1_id, $this->player_2_id])
+            ->map(fn($player_id) => PlayerState::load($player_id));
     }
 
     public function currentPlayer(): PlayerState

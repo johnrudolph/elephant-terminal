@@ -18,6 +18,8 @@ class GameCreated extends Event
 
     public ?string $bot_difficulty = null;
 
+    public ?string $victory_shape = null;
+
     public function apply(GameState $state)
     {
         $state->status = 'created';
@@ -37,11 +39,16 @@ class GameCreated extends Event
 
     public function fired()
     {
+        if (! $this->victory_shape) {
+            $this->victory_shape = collect(['square', 'line', 'pryamid', 'el', 'zig'])->random();
+        }
+
         PlayerCreated::fire(
             game_id: $this->game_id,
             user_id: $this->user_id,
             is_host: true,
             is_bot: false,
+            victory_shape: $this->victory_shape,
         );
 
         if ($this->is_single_player) {
@@ -51,6 +58,7 @@ class GameCreated extends Event
                 is_host: false,
                 is_bot: true,
                 bot_difficulty: $this->bot_difficulty,
+                victory_shape: $this->victory_shape,
             );
         }
     }

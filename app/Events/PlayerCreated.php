@@ -18,17 +18,29 @@ class PlayerCreated extends Event
 
     public int $user_id;
 
+    public ?string $victory_shape;
+
     public ?bool $is_host = false;
 
     public ?bool $is_bot = false;
 
     public function apply(PlayerState $state)
     {
+        $state->game_id = $this->game_id;
+
         $state->user_id = $this->user_id;
 
         $state->is_bot = $this->is_bot;
 
         $state->is_host = $this->is_host;
+
+        $game = $this->state(GameState::class);
+
+        if(! $this->is_host) {
+            $this->victory_shape = PlayerState::load($game->player_1_id)->victory_shape;
+        }
+
+        $state->victory_shape = $this->victory_shape;
     }
 
     public function applyToGame(GameState $state)
@@ -53,6 +65,7 @@ class PlayerCreated extends Event
             'user_id' => $this->user_id,
             'is_host' => $this->is_host,
             'is_bot' => $this->is_bot,
+            'victory_shape' => $this->victory_shape,
         ]);
     }
 }

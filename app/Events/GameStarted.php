@@ -16,10 +16,6 @@ class GameStarted extends Event
     {
         $state->status = 'active';
 
-        // rand(0, 1) === 0
-        //     ? $state->current_player_id = $state->player_1_id
-        //     : $state->current_player_id = $state->player_2_id;
-
         $state->current_player_id = $state->player_1_id;
 
         $state->phase = GameState::PHASE_PLACE_TILE;

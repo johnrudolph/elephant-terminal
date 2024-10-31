@@ -3,6 +3,7 @@
 namespace Tests;
 
 use App\Events\GameCreated;
+use App\Events\GameStarted;
 use App\Events\PlayerCreated;
 use App\Models\Game;
 use App\Models\Player;
@@ -17,12 +18,13 @@ abstract class TestCase extends BaseTestCase
 
     public Player $player_2;
 
-    public function bootMultiplayerGame()
+    public function bootMultiplayerGame(?string $victory_shape = 'square')
     {
         User::factory()->count(2)->create();
 
         $game_id = GameCreated::fire(
-            user_id: 1
+            user_id: 1,
+            victory_shape: $victory_shape,
         )->game_id;
 
         $this->game = Game::find($game_id);
@@ -35,16 +37,19 @@ abstract class TestCase extends BaseTestCase
         )->player_id;
 
         $this->player_2 = Player::find($player_2_id);
+
+        GameStarted::fire(game_id: $game_id);
     }
 
-    public function bootSinglePlayerGame(string $bot_difficulty = 'hard')
+    public function bootSinglePlayerGame(?string $bot_difficulty = 'hard', ?string $victory_shape = 'square')
     {
         User::factory()->create();
 
         $game_id = GameCreated::fire(
             user_id: 1,
             is_single_player: true,
-            bot_difficulty: $bot_difficulty
+            bot_difficulty: $bot_difficulty,
+            victory_shape: $victory_shape,
         )->game_id;
 
         $this->game = Game::find($game_id);
@@ -52,6 +57,8 @@ abstract class TestCase extends BaseTestCase
         $this->player_1 = $this->game->players->first();
 
         $this->player_2 = $this->game->players->last();
+
+        GameStarted::fire(game_id: $game_id);
     }
 
     public function dumpBoard()
@@ -60,13 +67,13 @@ abstract class TestCase extends BaseTestCase
 
         $b = collect($this->game->state()->board)
             ->mapWithKeys(function($occupant, $space) use ($elephant_space) {
-                if ($occupant === $this->player_1->id) {
+                if ($occupant === (string) $this->player_1->id) {
                     return $elephant_space === $space
                         ? [$space => '1E'] 
                         : [$space => '1'];
                 }
 
-                if ($occupant === $this->player_2->id) {
+                if ($occupant === (string) $this->player_2->id) {
                     return $elephant_space === $space
                         ? [$space => '2E'] 
                         : [$space => '2'];

@@ -76,8 +76,15 @@ class PlayerPlayedTile extends Event
         );
     }
 
+    public function applyToPlayer(PlayerState $state)
+    {
+        //
+    }
+
     public function applyToGame(GameState $state)
     {
+        $this->state(PlayerState::class)->hand--;
+
         $state->moves[] = [
             'type' => 'tile',
             'player_id' => $this->player_id,
@@ -109,17 +116,14 @@ class PlayerPlayedTile extends Event
 
         $state->phase = GameState::PHASE_MOVE_ELEPHANT;
 
-        $both_player_hands_are_empty = $state->currentPlayer()->hand === 0 && $state->idlePlayer()->hand === 0;
+        $both_player_hands_are_empty = $state->players()
+            ->map(fn ($player) => $player->hand)
+            ->sum() === 0;
 
-        if ($state->victor($state->board) || $both_player_hands_are_empty) {
+        if (count($state->victor($state->board)) > 0 || $both_player_hands_are_empty) {
             $state->status = 'complete';
             $state->victors = $state->victor($state->board);
         }
-    }
-
-    public function applyToPlayer(PlayerState $state)
-    {
-        $state->hand--;
     }
 
     public function handle()

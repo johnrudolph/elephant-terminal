@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Models\Move;
+use App\States\GameState;
 use App\States\PlayerState;
 use App\Events\PlayerPlayedTile;
 use App\Events\PlayerMovedElephant;

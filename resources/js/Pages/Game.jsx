@@ -9,6 +9,8 @@ import { affected_sliding_spaces } from '@/Utilities/board-logic'
 export default function Game({ game }) {
   const props = usePage().props;
 
+  const user_player = props.players.find(player => player.is_user === true);
+
   const [gameState, setGameState] = useState({
     board: Object.entries(props.game.board),
     phase: props.game.phase,
@@ -113,6 +115,7 @@ export default function Game({ game }) {
         }
     >
         <Head title="Game" />
+          <p>{user_player.victory_shape}</p>
           <div className="grid grid-cols-6 w-96 h-full justify-center mx-auto">
             <div className="h-full justify-center items-center"></div>
             <TileInput space="1" direction="down" props={props} gameState={gameState} onClick={() => playTile(1, "down")}></TileInput>
