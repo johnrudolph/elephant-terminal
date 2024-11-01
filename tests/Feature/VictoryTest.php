@@ -114,8 +114,6 @@ it('can handle pyramid victories', function() {
     $this->player_2->moveElephant(7, true);
     $this->player_1->playTile(3, 'down');
 
-    dd($this->game->state()->victors);
-
     expect($this->game->fresh()->status)->toBe('complete');
     
     $fake_board = [

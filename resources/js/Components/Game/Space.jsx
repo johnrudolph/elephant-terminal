@@ -21,26 +21,24 @@ export default function Space({
         let first_move_to_animate = animationState.queued_moves[0];
 
         should_animate_slide = first_move_to_animate.type === 'tile'
-            && first_move_to_animate.spaces.some(i => i.space_id === space_id);
+            && first_move_to_animate.spaces.map(i => i.space_id).includes(Number(space_id));
     } 
 
     const [animateTile, setAnimateTile] = useState(should_animate_slide);
 
-    useEffect(() => {
-        if (animateTile) {
-            runAnimation();
-        }
-    }, [animateTile]);
+    // useEffect(() => {
+    //     if (animateTile) {
+    //         runAnimation();
+    //     }
+    // }, [animateTile]);
 
-    const runAnimation = () => {
-      setAnimateTile(false); 
-    };
-
-    console.log(animateTile)
+    // const runAnimation = () => {
+    //   setAnimateTile(false); 
+    // };
 
     return (
         <button
-            className={`relative border border-black h-full flex justify-center items-center ${
+            className={`relative border z-90 border-black h-full flex justify-center items-center ${
                 enabled ? 'bg-yellow-100 animate-pulse' : 'bg-gray-100'
             }`}
             disabled={!enabled}
