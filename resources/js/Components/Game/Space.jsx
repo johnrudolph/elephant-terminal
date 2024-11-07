@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { motion, useAnimation } from 'framer-motion';
 
 export default function Space({
     space,
@@ -15,26 +15,47 @@ export default function Space({
     const game_is_active = gameState.status === 'active';
     const enabled = is_valid_move && is_player_turn && is_move_phase && game_is_active;
 
-    let should_animate_slide = false;
+    const [animateTile, setAnimateTile] = useState(false);
+    const controls = useAnimation();
 
-    if (animationState.queued_moves && animationState.queued_moves.length > 0) {
-        let first_move_to_animate = animationState.queued_moves[0];
+    const animation_coordinates = {
+        left: { x: 64, y: 0 },
+        right: { x: -64, y: 0 },
+        up: { x: 0, y: 64 },
+        down: { x: 0, y: -64 },
+    };
 
-        should_animate_slide = first_move_to_animate.type === 'tile'
-            && first_move_to_animate.spaces.map(i => i.space_id).includes(Number(space_id));
-    } 
+    const direction = (animationState.queued_moves && animationState.queued_moves.length > 0) 
+        ? animationState.queued_moves[0].direction 
+        : null;
 
-    const [animateTile, setAnimateTile] = useState(should_animate_slide);
+    const startPosition = direction ? animation_coordinates[direction] : { x: 0, y: 0 };
 
-    // useEffect(() => {
-    //     if (animateTile) {
-    //         runAnimation();
-    //     }
-    // }, [animateTile]);
+    useEffect(() => {
+        if (animationState.queued_moves && animationState.queued_moves.length > 0) {
+            const first_move_to_animate = animationState.queued_moves[0];
 
-    // const runAnimation = () => {
-    //   setAnimateTile(false); 
-    // };
+            const should_animate_slide = first_move_to_animate.type === 'tile'
+                && first_move_to_animate.spaces.map(i => Number(i.space_id)).includes(Number(space_id));
+
+            setAnimateTile(should_animate_slide); 
+        }
+    }, [animationState]);
+
+    // this should be animating, but isn't
+    useEffect(() => {
+        console.log(Number(space_id), animateTile);
+
+        if (animateTile) {
+            controls.start({
+                x: 0,
+                y: 0,
+                transition: { duration: 0.8 } 
+            }).then(() => {
+                setAnimateTile(false);
+            });
+        }
+    }, [animateTile]);
 
     return (
         <button
@@ -50,8 +71,9 @@ export default function Space({
                 </div>
             )}
             <motion.div
-                animate={animateTile ? { x:-20, y:-20 } : { x:0, y:0 }} 
-                transition={{ duration: 0.8 }}
+                initial={{ x: startPosition.x, y: startPosition.y }}
+                animate={controls}
+                style={{ position: 'absolute' }}
                 className={`w-12 h-12 rounded ${
                     occupant === props.player_id_string && 'bg-sky-400'
                 } ${

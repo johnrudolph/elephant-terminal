@@ -38,6 +38,16 @@ export default function Game({ game }) {
     queued_moves: [], 
   });
 
+  const queueMoves = (moves) => {
+      setAnimationState(prev => ({
+          ...prev,
+          queued_moves: moves.map((move, index) => ({
+              ...move,
+              id: `move-${Date.now()}-${index}` // Add unique id to each move
+          }))
+      }));
+  }; 
+
   Echo.private(`games.${props.game_id_string}`)
     .listen('PlayerPlayedTileBroadcast', (e) => {
       refresh_game(e.move_id);
@@ -64,26 +74,23 @@ export default function Game({ game }) {
       phase: 'move',
     }));
 
+    const affectedSpaces = affected_sliding_spaces(space, direction, gameState.board, props.player_id_string);
+    
+    // Create a single move with all affected spaces
     const newMove = {
-      spaces: affected_sliding_spaces(space, direction, gameState.board, props.player_id_string),
-      direction: direction,
-      type: 'tile',
+        id: `move-${Date.now()}`,  // Add unique identifier
+        spaces: affectedSpaces,
+        direction: direction,
+        type: 'tile',
     };
 
-    setAnimationState((prevAnimationState) => ({
-      ...prevAnimationState,
-      queued_moves: [...prevAnimationState.queued_moves, newMove],
-    }));
+    // Replace queued moves instead of adding to them
+    setAnimationState({
+        previous_moves: [],  // Clear previous moves
+        queued_moves: [newMove]  // Set as single queued move
+    });
 
-    post(
-      route('games.play_tile', {game: props.game_id_string}),
-      {
-          game_id: props.game_id_string,
-          space: space,
-          direction: direction,
-      },
-      props.csrf_token
-    )
+    // Uncomment your post request here
   }
 
   const moveElephant = (space) => {
@@ -118,12 +125,12 @@ export default function Game({ game }) {
           <p>{user_player.victory_shape}</p>
           <div className="grid grid-cols-6 w-96 h-full justify-center mx-auto">
             <div className="h-full justify-center items-center"></div>
-            <TileInput space="1" direction="down" props={props} gameState={gameState} onClick={() => playTile(1, "down")}></TileInput>
-            <TileInput space="2" direction="down" props={props} gameState={gameState} onClick={() => playTile(2, "down")}></TileInput>
-            <TileInput space="3" direction="down" props={props} gameState={gameState} onClick={() => playTile(3, "down")}></TileInput>
-            <TileInput space="4" direction="down" props={props} gameState={gameState} onClick={() => playTile(4, "down")}></TileInput>
+            <TileInput space="1" direction="down" props={props} gameState={gameState} onTileMoved={() => playTile(1, "down")}></TileInput>
+            <TileInput space="2" direction="down" props={props} gameState={gameState} onTileMoved={() => playTile(2, "down")}></TileInput>
+            <TileInput space="3" direction="down" props={props} gameState={gameState} onTileMoved={() => playTile(3, "down")}></TileInput>
+            <TileInput space="4" direction="down" props={props} gameState={gameState} onTileMoved={() => playTile(4, "down")}></TileInput>
             <div className="h-full justify-center items-center"></div>
-            <TileInput space="1" direction="right" props={props} gameState={gameState} onClick={() => playTile(1, "right")}></TileInput>
+            <TileInput space="1" direction="right" props={props} gameState={gameState} onTileMoved={() => playTile(1, "right")}></TileInput>
             {gameState.board.slice(0, 4).map((space, index) => (
               <Space 
                 key={space} 
@@ -134,8 +141,8 @@ export default function Game({ game }) {
                 props={props} 
               ></Space>
             ))}
-            <TileInput space="4" direction="left" props={props} gameState={gameState} onClick={() => playTile(4, "left")}></TileInput>
-            <TileInput space="5" direction="right" props={props} gameState={gameState} onClick={() => playTile(5, "right")}></TileInput>
+            <TileInput space="4" direction="left" props={props} gameState={gameState} onTileMoved={() => playTile(4, "left")}></TileInput>
+            <TileInput space="5" direction="right" props={props} gameState={gameState} onTileMoved={() => playTile(5, "right")}></TileInput>
             {gameState.board.slice(4, 8).map((space, index) => (
               <Space 
                 key={space} 
@@ -146,8 +153,8 @@ export default function Game({ game }) {
                 props={props} 
               ></Space>
             ))}
-            <TileInput space="8" direction="left" props={props} gameState={gameState} onClick={() => playTile(8, "left")}></TileInput>
-            <TileInput space="9" direction="right" props={props} gameState={gameState} onClick={() => playTile(9, "right")}></TileInput>
+            <TileInput space="8" direction="left" props={props} gameState={gameState} onTileMoved={() => playTile(8, "left")}></TileInput>
+            <TileInput space="9" direction="right" props={props} gameState={gameState} onTileMoved={() => playTile(9, "right")}></TileInput>
             {gameState.board.slice(8, 12).map((space, index) => (
               <Space 
                 key={space} 
@@ -158,8 +165,8 @@ export default function Game({ game }) {
                 props={props} 
               ></Space>
             ))}
-            <TileInput space="12" direction="left" props={props} gameState={gameState} onClick={() => playTile(12, "left")}></TileInput>
-            <TileInput space="13" direction="right" props={props} gameState={gameState} onClick={() => playTile(1, "right")}></TileInput>
+            <TileInput space="12" direction="left" props={props} gameState={gameState} onTileMoved={() => playTile(12, "left")}></TileInput>
+            <TileInput space="13" direction="right" props={props} gameState={gameState} onTileMoved={() => playTile(1, "right")}></TileInput>
             {gameState.board.slice(12, 16).map((space, index) => (
               <Space 
                 key={space} 
@@ -170,12 +177,12 @@ export default function Game({ game }) {
                 props={props} 
               ></Space>
             ))}
-            <TileInput space="16" direction="left" props={props} gameState={gameState} onClick={() => playTile(16, "left")}></TileInput>
+            <TileInput space="16" direction="left" props={props} gameState={gameState} onTileMoved={() => playTile(16, "left")}></TileInput>
             <div className="h-full justify-center items-center"></div>
-            <TileInput space="13" direction="up" props={props} gameState={gameState} onClick={() => playTile(13, "up")}></TileInput>
-            <TileInput space="14" direction="up" props={props} gameState={gameState} onClick={() => playTile(14, "up")}></TileInput>
-            <TileInput space="15" direction="up" props={props} gameState={gameState} onClick={() => playTile(15, "up")}></TileInput>
-            <TileInput space="16" direction="up" props={props} gameState={gameState} onClick={() => playTile(16, "up")}></TileInput>
+            <TileInput space="13" direction="up" props={props} gameState={gameState} onTileMoved={() => playTile(13, "up")}></TileInput>
+            <TileInput space="14" direction="up" props={props} gameState={gameState} onTileMoved={() => playTile(14, "up")}></TileInput>
+            <TileInput space="15" direction="up" props={props} gameState={gameState} onTileMoved={() => playTile(15, "up")}></TileInput>
+            <TileInput space="16" direction="up" props={props} gameState={gameState} onTileMoved={() => playTile(16, "up")}></TileInput>
             <div className="h-full justify-center items-center"></div>
         </div>
     </AuthenticatedLayout>

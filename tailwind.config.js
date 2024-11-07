@@ -8,6 +8,8 @@ export default {
         './storage/framework/views/*.php',
         './resources/views/**/*.blade.php',
         './resources/js/**/*.jsx',
+        "./vendor/livewire/flux-pro/stubs/**/*.blade.php",
+        "./vendor/livewire/flux/stubs/**/*.blade.php",
     ],
 
     theme: {
