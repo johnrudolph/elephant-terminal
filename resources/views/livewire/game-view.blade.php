@@ -162,15 +162,17 @@
         <div class="col-start-2 h-8">
             <div class="grid grid-cols-4 gap-1" x-show="tile_phase">
                 <template x-for="i in 4">
-                    <button 
-                        @click="playTile('down', i-1); $wire.playTile('down', i)"
+                    <div>
+                        <button 
+                            @click="playTile('down', i-1); $wire.playTile('down', i)"
                         class="w-[58px] animate-pulse flex items-center justify-center"
-                        x-show="Object.values(valid_slides).some(slide => slide['space'] === i && slide['direction'] === 'down')"
-                    >
-                        ↓
-                    </button>
-                    <div x-show="!Object.values(valid_slides).some(slide => slide['space'] === i && slide['direction'] === 'down')">
-                        <div class="h-[58px]"></div>
+                            x-show="Object.values(valid_slides).some(slide => slide['space'] === i && slide['direction'] === 'down')"
+                        >
+                            ↓
+                        </button>
+                        <div x-show="!Object.values(valid_slides).some(slide => slide['space'] === i && slide['direction'] === 'down')">
+                            <div class="w-[58px]"></div>
+                        </div>
                     </div>
                 </template>
             </div>
@@ -236,12 +238,18 @@
         <div class="col-start-3 w-8">
             <div class="grid grid-rows-4 gap-1" x-show="tile_phase">
                 <template x-for="i in 4">
-                    <button 
-                        @click="playTile('from_right', i-1); $wire.playTile('left', i)"
-                        class="h-[58px] animate-pulse rounded-lg flex items-center justify-center"
-                    >
-                        ←
-                    </button>
+                    <div>
+                        <button 
+                            @click="playTile('from_right', i-1); $wire.playTile('left', i)"
+                            class="h-[58px] animate-pulse rounded-lg flex items-center justify-center"
+                            x-show="Object.values(valid_slides).some(slide => slide['space'] === i * 4 && slide['direction'] === 'left')"
+                        >
+                            ←
+                        </button>
+                        <div x-show="!Object.values(valid_slides).some(slide => slide['space'] === i * 4 && slide['direction'] === 'left')">
+                            <div class="h-[58px]"></div>
+                        </div>
+                    </div>
                 </template>
             </div>
         </div>
@@ -250,12 +258,18 @@
         <div class="col-start-2 h-8">
             <div class="grid grid-cols-4 gap-1" x-show="tile_phase">
                 <template x-for="i in 4">
-                    <button 
-                        @click="playTile('up', i-1); $wire.playTile('up', i)"
-                        class="w-[58px] animate-pulse flex items-center justify-center"
-                    >
-                        ↑
-                    </button>
+                    <div>
+                        <button 
+                            @click="playTile('up', i-1); $wire.playTile('up', i)"
+                            class="w-[58px] animate-pulse flex items-center justify-center"
+                            x-show="Object.values(valid_slides).some(slide => slide['space'] === i +12 && slide['direction'] === 'up')"
+                        >
+                            ↑
+                        </button>
+                        <div x-show="!Object.values(valid_slides).some(slide => slide['space'] === i + 12 && slide['direction'] === 'up')">
+                            <div class="h-[58px]"></div>
+                        </div>
+                    </div>
                 </template>
             </div>
         </div>
