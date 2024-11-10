@@ -91,24 +91,17 @@ class PlayerMovedElephant extends Event
     {
         $game = $this->state(GameState::class);
 
-        Game::find($this->game_id)->update([
+        $game_model = Game::find($this->game_id);
+        
+        $game_model->update([
             'valid_elephant_moves' => $game->validElephantMoves(),
             'valid_slides' => $game->validSlides(),
             'elephant_space' => $game->elephant_space,
             'phase' => $game->phase,
             'current_player_id' => $game->current_player_id,
         ]);
-        
-        $elephant_move_direction = match ($this->elephant_space_before - $game->elephant_space) {
-            0 => 'none',
-            1 => 'left',
-            -1 => 'right',
-            4 => 'up',
-            -4 => 'down',
-            default => 'error' // Optionally handle unexpected values
-        };
 
-        Move::create([
+       $move = Move::create([
             'game_id' => $this->game_id,
             'player_id' => $this->player_id,
             'type' => 'elephant',
@@ -118,5 +111,7 @@ class PlayerMovedElephant extends Event
             'elephant_after' => $game->elephant_space,
             'bot_move_scores' => $this->bot_move_scores,
         ]);
+
+        PlayerMovedElephantBroadcast::dispatch($game_model, $move);
     }
 }

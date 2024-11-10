@@ -3,10 +3,12 @@
 namespace App\Livewire;
 
 use App\Models\Game;
+use App\Models\Move;
+use App\Models\Player;
 use Livewire\Component;
+use Thunk\Verbs\Facades\Verbs;
 use App\Events\PlayerPlayedTile;
 use Livewire\Attributes\Computed;
-use App\Events\PlayerMovedElephant;
 use Illuminate\Support\Facades\Auth;
 
 class GameView extends Component
@@ -19,6 +21,18 @@ class GameView extends Component
 
     public bool $is_player_turn;
 
+    public string $phase;
+
+    public string $game_status;
+
+    public int $player_hand;
+
+    public int $opponent_hand;
+
+    public array $valid_elephant_moves;
+
+    public array $valid_slides;
+
     #[Computed]
     public function user()
     {
@@ -29,6 +43,12 @@ class GameView extends Component
     public function player()
     {
         return $this->game->players()->where('user_id', $this->user->id)->first();
+    }
+
+    #[Computed]
+    public function opponent(): Player
+    {
+        return $this->game->players->firstWhere('user_id', '!=', $this->user->id);
     }
 
     #[Computed]
@@ -48,8 +68,19 @@ class GameView extends Component
         $this->elephant_space = $this->game->elephant_space;
 
         $this->is_player_turn = $this->game->current_player_id === (string) $this->player->id && $this->game->status === 'active';
-    }
 
+        $this->phase = $this->game->phase;
+
+        $this->game_status = $this->game->status;
+
+        $this->player_hand = $this->player->hand;
+
+        $this->opponent_hand = $this->opponent->hand;
+
+        $this->valid_elephant_moves = $this->game->valid_elephant_moves;
+
+        $this->valid_slides = $this->game->valid_slides;
+    }
     public function playTile($direction, $index)
     {
         $space = match($direction) {
@@ -70,7 +101,60 @@ class GameView extends Component
 
     public function moveElephant($space)
     {
-        $this->player->moveElephant($space);
+        $this->player->moveElephant($space, skip_bot_phase: true);
+
+        Verbs::commit();
+
+        if ($this->opponent->is_bot) {
+            sleep(1);
+            $this->opponent->playTile();
+            Verbs::commit();
+            sleep(1);
+            $this->opponent->moveElephant();
+            Verbs::commit();
+        }
+    }
+
+    public function getListeners()
+    {
+        return [
+            "echo-private:games.{$this->game->id}:PlayerMovedElephantBroadcast" => 'handleElephantMove',
+            "echo-private:games.{$this->game->id}:PlayerPlayedTileBroadcast" => 'handleTilePlayed',
+        ];
+    }
+
+    public function handleElephantMove($event)
+    {
+        $move = Move::find($event['move_id']);
+
+        if ($move->player_id === $this->player->id) {
+            return;
+        }
+
+        $this->game->refresh();
+
+        $this->elephant_space = $move->elephant_after;
+
+        $this->valid_slides = $this->game->valid_slides;
+
+        $this->valid_elephant_moves = $this->game->valid_elephant_moves;
+
+        $this->phase = $this->game->phase;
+
+        $this->game_status = $this->game->status;
+
+        $this->is_player_turn = $this->game->current_player_id === (string) $this->player->id && $this->game->status === 'active';
+    }
+
+    public function handleTilePlayed($event)
+    {
+        $move = Move::find($event['move_id']);
+
+        if ($move->player_id === $this->player->id) {
+            return;
+        }
+        
+        unset($this->tiles);
     }
 
     public function render()

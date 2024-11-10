@@ -3,9 +3,10 @@
 namespace App\Events;
 
 use App\Models\Game;
+use App\Models\User;
+use Thunk\Verbs\Event;
 use App\States\GameState;
 use Thunk\Verbs\Attributes\Autodiscovery\StateId;
-use Thunk\Verbs\Event;
 
 class GameCreated extends Event
 {
@@ -26,21 +27,17 @@ class GameCreated extends Event
 
         $state->is_single_player = $this->is_single_player;
 
-        $state->player_1_id = $this->user_id;
-
         $state->victors = [];
 
         $state->moves = [];
 
         $state->phase = $state::PHASE_PLACE_TILE;
-
-        $state->current_player_id = $state->player_1_id;
     }
 
     public function fired()
     {
         if (! $this->victory_shape) {
-            $this->victory_shape = collect(['square', 'line', 'pryamid', 'el', 'zig'])->random();
+            $this->victory_shape = collect(['square', 'line', 'pyramid', 'el', 'zig'])->random();
         }
 
         PlayerCreated::fire(
@@ -54,7 +51,8 @@ class GameCreated extends Event
         if ($this->is_single_player) {
             PlayerCreated::fire(
                 game_id: $this->game_id,
-                user_id: 1,
+                // @todo this is yucky
+                user_id: User::firstWhere('email', 'bot@bot.bot')->id,
                 is_host: false,
                 is_bot: true,
                 bot_difficulty: $this->bot_difficulty,
@@ -76,7 +74,6 @@ class GameCreated extends Event
             'valid_slides' => $game->validSlides(),
             'elephant_space' => $game->elephant_space,
             'phase' => $game->phase,
-            'current_player_id' => $game->current_player_id,
             'victors' => $game->victors,
         ]);
     }

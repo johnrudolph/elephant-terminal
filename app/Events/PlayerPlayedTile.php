@@ -130,7 +130,9 @@ class PlayerPlayedTile extends Event
     {
         $game = $this->state(GameState::class);
 
-        Game::find($this->game_id)->update([
+        $game_model = Game::find($this->game_id);
+        
+        $game_model->update([
             'status' => $game->status,
             'board' => $game->board,
             'valid_elephant_moves' => $game->validElephantMoves(),
@@ -144,7 +146,7 @@ class PlayerPlayedTile extends Event
             'hand' => PlayerState::load($game->current_player_id)->hand,
         ]);
 
-        Move::create([
+        $move = Move::create([
             'game_id' => $this->game_id,
             'player_id' => $this->player_id,
             'type' => 'tile',
@@ -155,5 +157,7 @@ class PlayerPlayedTile extends Event
             'bot_move_scores' => $this->bot_move_scores,
             'initial_slide' => ['space' => $this->space, 'direction' => $this->direction],
         ]);
+
+        PlayerPlayedTileBroadcast::dispatch($game_model, $move);
     }
 }

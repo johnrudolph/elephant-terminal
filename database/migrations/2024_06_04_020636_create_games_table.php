@@ -18,7 +18,7 @@ return new class extends Migration
             $table->json('valid_elephant_moves');
             $table->integer('elephant_space');
             $table->string('phase')->enum('elephant', 'tile');
-            $table->foreignIdFor(Player::class, 'current_player_id');
+            $table->foreignIdFor(Player::class, 'current_player_id')->nullable();
             $table->json('victors')->nullable();
             $table->timestamps();
         });

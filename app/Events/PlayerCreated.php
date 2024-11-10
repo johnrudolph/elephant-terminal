@@ -2,11 +2,12 @@
 
 namespace App\Events;
 
+use App\Models\Game;
 use App\Models\Player;
+use Thunk\Verbs\Event;
 use App\States\GameState;
 use App\States\PlayerState;
 use Thunk\Verbs\Attributes\Autodiscovery\StateId;
-use Thunk\Verbs\Event;
 
 class PlayerCreated extends Event
 {
@@ -66,6 +67,10 @@ class PlayerCreated extends Event
             'is_host' => $this->is_host,
             'is_bot' => $this->is_bot,
             'victory_shape' => $this->victory_shape,
+        ]);
+
+        Game::find($this->game_id)->update([
+            'current_player_id' => $this->state(GameState::class)->current_player_id,
         ]);
     }
 }
