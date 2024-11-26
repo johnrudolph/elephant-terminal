@@ -123,6 +123,21 @@ trait BotLogic
 
     public function hypotheticallyHasCheck(string $player_id, array $hypothetical_board)
     {
+        $player_victory_shape = $player_id === $this->player_1_id
+            ? $this->player_1_victory_shape
+            : $this->player_2_victory_shape;
+
+        return match($player_victory_shape) {
+            'el' => $this->hasTriangleCheck($player_id, $hypothetical_board) || $this->hasLineCheck($player_id, $hypothetical_board),
+            'line' => $this->hasLineCheck($player_id, $hypothetical_board),
+            'zig' => $this->hasTriangleCheck($player_id, $hypothetical_board),
+            'pyramid' => $this->hasTriangleCheck($player_id, $hypothetical_board) || $this->hasLineCheck($player_id, $hypothetical_board),
+            'square' => $this->hasTriangleCheck($player_id, $hypothetical_board),
+        };
+    }
+
+    public function hasTriangleCheck(string $player_id, array $hypothetical_board)
+    {
         // @todo modify with "triangle of 3 that I can't block with elephant"
 
         $every_triangle_check = [
@@ -158,6 +173,38 @@ trait BotLogic
 
         // @todo: add opponent has a zigzag of 4 with the ability to push it into place
         // bonus: modify the above with "zigzag of 4 that I can't block with elephant"
+
+        return false;
+    }
+
+    public function hasLineCheck(string $player_id, array $hypothetical_board)
+    {
+        $every_lin_check = [
+            [1, 2, 3],
+            [2, 3, 4],
+            [5, 6, 7],
+            [6, 7, 8],
+            [9, 10, 11],
+            [10, 11, 12],
+            [13, 14, 15],
+            [14, 15, 16],
+            [1, 5, 9],
+            [5, 9, 13],
+            [2, 6, 10],
+            [6, 10, 14],
+            [3, 7, 11],
+            [7, 11, 15],
+            [4, 8, 12],
+            [8, 12, 16],
+        ];
+
+        return collect($every_lin_check)
+            ->map(fn ($line) =>
+                $hypothetical_board[$line[0]] === $player_id
+                && $hypothetical_board[$line[1]] === $player_id
+                && $hypothetical_board[$line[2]] === $player_id
+            )
+            ->contains(true);
 
         return false;
     }

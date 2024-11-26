@@ -20,6 +20,10 @@ class GameState extends State
 
     public int $player_2_id;
 
+    public string $player_1_victory_shape;
+
+    public string $player_2_victory_shape;
+
     public int $current_player_id;
 
     public string $phase;

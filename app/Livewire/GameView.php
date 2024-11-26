@@ -105,13 +105,19 @@ class GameView extends Component
 
         Verbs::commit();
 
-        if ($this->opponent->is_bot) {
-            sleep(1);
+        if ($this->opponent->is_bot && $this->game->status === 'active' && $this->opponent->hand > 0) {
+            sleep(0.5);
             $this->opponent->playTile();
             Verbs::commit();
-            sleep(1);
-            $this->opponent->moveElephant();
-            Verbs::commit();
+
+            $this->game->refresh();
+            $this->game_status = $this->game->status;
+
+            if ($this->game->status === 'active') { 
+                sleep(2);
+                $this->opponent->moveElephant();
+                Verbs::commit();
+            }
         }
     }
 
@@ -153,8 +159,38 @@ class GameView extends Component
         if ($move->player_id === $this->player->id) {
             return;
         }
-        
-        unset($this->tiles);
+
+        $direction = match($move->initial_slide['direction']) {
+            'down' => 'down',
+            'up' => 'up',
+            'left' => 'from_right',
+            'right' => 'from_left',
+        };
+
+        $position = match($move->initial_slide['direction']) {
+            'down' => $move->initial_slide['space'] - 1,
+            'up' => $move->initial_slide['space'] - 13,
+            'right' => ($move->initial_slide['space'] - 1) / 4,
+            'left' => ($move->initial_slide['space'] / 4) - 1,
+        };
+
+        $this->dispatch('opponent-played-tile', [
+            'direction' => $direction,
+            'position' => $position,
+            'player_id' => (string) $move->player_id
+        ]);
+
+        $this->game->refresh();
+
+        $this->valid_slides = $this->game->valid_slides;
+
+        $this->valid_elephant_moves = $this->game->valid_elephant_moves;
+
+        $this->phase = $this->game->phase;
+
+        $this->game_status = $this->game->status;
+
+        $this->is_player_turn = $this->game->current_player_id === (string) $this->player->id && $this->game->status === 'active';
     }
 
     public function render()

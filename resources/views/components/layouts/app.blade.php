@@ -11,8 +11,8 @@
         @fluxStyles
         @livewireScripts
     </head>
-    <body class="min-h-screen bg-white">
-        <flux:header container class="bg-zinc-50 border-b border-zinc-200">
+    <body class="min-h-screen bg-white dark:bg-zinc-800 text-zinc-800 dark:text-zinc-200">
+        <flux:header container class="bg-zinc-50 border-b border-zinc-200 dark:bg-zinc-800 dark:border-zinc-700">
             <flux:sidebar.toggle class="md:hidden" icon="bars-2" inset="left" />
 
             <flux:brand href="#" logo="https://fluxui.dev/img/demo/logo.png" name="Acme Inc." class="max-md:hidden" />
@@ -29,7 +29,7 @@
             </flux:navbar>
         </flux:header>
 
-        <flux:sidebar stashable sticky class="md:hidden bg-zinc-50 border-r border-zinc-200">
+        <flux:sidebar stashable sticky class="md:hidden bg-zinc-50 dark:bg-zinc-800 border-r border-zinc-200 dark:border-zinc-700">
             <flux:sidebar.toggle class="md:hidden" icon="x-mark" />
 
             <flux:brand href="#" name="Elephant in the Room" class="px-2" />

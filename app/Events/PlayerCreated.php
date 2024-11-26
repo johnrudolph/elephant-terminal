@@ -49,6 +49,10 @@ class PlayerCreated extends Event
         $this->is_host
             ? $state->player_1_id = $this->player_id
             : $state->player_2_id = $this->player_id;
+
+        $this->is_host
+            ? $state->player_1_victory_shape = $this->victory_shape
+            : $state->player_2_victory_shape = $this->victory_shape;
     }
 
     public function fired()
