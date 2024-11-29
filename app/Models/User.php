@@ -58,4 +58,37 @@ class User extends Authenticatable
     {
         return $this->hasMany(Player::class);
     }
+
+    public function initiatedFriendships()
+    {
+        return $this->hasMany(Friendship::class, 'initiator_id');
+    }
+
+    public function receivedFriendships()
+    {
+        return $this->hasMany(Friendship::class, 'recipient_id');
+    }
+
+    public function friendships()
+    {
+        return $this->hasMany(Friendship::class, 'initiator_id')
+            ->orWhere('recipient_id', $this->id);
+    }
+
+    public function friends()
+    {
+        return User::whereIn('id', function($query) {
+            $query->select('recipient_id')
+                ->from('friendships')
+                ->where('initiator_id', $this->id)
+                ->where('status', 'accepted')
+            ->union(
+                $query->newQuery()
+                    ->select('initiator_id')
+                    ->from('friendships')
+                    ->where('recipient_id', $this->id)
+                    ->where('status', 'accepted')
+            );
+        });
+    }
 }
