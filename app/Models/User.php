@@ -89,6 +89,6 @@ class User extends Authenticatable
                     ->where('recipient_id', $this->id)
                     ->where('status', 'accepted')
             );
-        });
+        })->get();
     }
 }

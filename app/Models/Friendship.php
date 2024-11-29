@@ -22,4 +22,17 @@ class Friendship extends Model
     {
         return $this->belongsTo(User::class, 'recipient_id');
     }
+
+    public function scopeBetweenUsers($query, $userA, $userB)
+    {
+        return $query->where(function($q) use ($userA, $userB) {
+            $q->where([
+                'initiator_id' => $userA,
+                'recipient_id' => $userB
+            ])->orWhere([
+                'initiator_id' => $userB,
+                'recipient_id' => $userA
+            ]);
+        });
+    }
 }
