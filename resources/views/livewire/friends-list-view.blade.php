@@ -22,7 +22,7 @@
                     <flux:row wire:key="incoming-request-{{ $request->id }}">
                         <flux:cell>{{ $request->initiator->name }}</flux:cell>
                         <flux:cell variant="strong" class="flex gap-2 justify-end">
-                        <flux:button variant="primary" size="xs" icon="check" wire:click="acceptFriendship('{{ $request->initiator->email }}')" />
+                            <flux:button variant="primary" size="xs" icon="check" wire:click="acceptFriendship('{{ $request->initiator->email }}')" />
                             <flux:button variant="danger" size="xs" icon="x-mark" wire:click="rejectFriendship('{{ $request->initiator->email }}')" />
                         </flux:cell>
                     </flux:row>

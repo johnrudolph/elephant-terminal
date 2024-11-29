@@ -16,7 +16,22 @@ class UserRejectedFriend extends Event
 
     public function handle()
     {
-        Friendship::betweenUsers($this->user_id, $this->friend_id)
-            ->update(['status' => 'rejected']);
+        // @todo this is yucky
+        $possibility_1 = Friendship::where([
+                'initiator_id' => $this->user_id,
+                'recipient_id' => $this->friend_id,
+            ])
+            ->first();
+
+        $possibility_2 = Friendship::where([
+                'initiator_id' => $this->friend_id,
+                'recipient_id' => $this->user_id,
+            ])
+            ->first();
+
+        $friendship = $possibility_1 ?? $possibility_2;
+
+        $friendship->status = 'rejected';
+        $friendship->save();
     }
 }

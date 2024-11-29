@@ -37,7 +37,13 @@ class GameCreated extends Event
     public function fired()
     {
         if (! $this->victory_shape) {
-            $this->victory_shape = collect(['square', 'line', 'pyramid', 'el', 'zig'])->random();
+            $this->victory_shape = collect([
+                'square', 
+                'line', 
+                // 'pyramid', 
+                'el', 
+                'zig'
+            ])->random();
         }
 
         PlayerCreated::fire(
