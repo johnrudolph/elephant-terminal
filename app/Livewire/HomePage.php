@@ -10,21 +10,31 @@ use Livewire\Attributes\Computed;
 
 class HomePage extends Component
 {
+    public bool $is_bot_game = false;
+
+    public bool $is_ranked_game = false;
+
+    public bool $is_friends_only = false;
+
     #[Computed]
     public function user()
     {
         return auth()->user();
     }
 
-    public function newGame(?bool $is_bot_game = true)
+    public function newGame()
     {
         $game_id = GameCreated::fire(
             user_id: $this->user->id,
-            is_single_player: $is_bot_game,
+            is_single_player: $this->is_bot_game,
             bot_difficulty: 'hard',
+            is_ranked: $this->is_ranked_game,
+            is_friends_only: $this->is_friends_only,
         )->game_id;
 
-        GameStarted::fire(game_id: $game_id);
+        if ($this->is_bot_game) {
+            GameStarted::fire(game_id: $game_id);
+        }
 
         Verbs::commit();
 

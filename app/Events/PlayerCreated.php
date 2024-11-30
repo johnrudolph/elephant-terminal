@@ -55,13 +55,6 @@ class PlayerCreated extends Event
             : $state->player_2_victory_shape = $this->victory_shape;
     }
 
-    public function fired()
-    {
-        if (! $this->is_host) {
-            GameStarted::fire(game_id: $this->game_id);
-        }
-    }
-
     public function handle()
     {
         Player::create([
@@ -73,8 +66,13 @@ class PlayerCreated extends Event
             'victory_shape' => $this->victory_shape,
         ]);
 
-        Game::find($this->game_id)->update([
-            'current_player_id' => $this->state(GameState::class)->current_player_id,
-        ]);
+        $game = Game::find($this->game_id);
+
+        if ($this->is_host) {
+            $game->current_player_id = $this->player_id;
+            $game->save();
+        }
+
+        PlayerCreatedBroadcast::dispatch($game);
     }
 }

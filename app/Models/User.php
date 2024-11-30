@@ -91,4 +91,21 @@ class User extends Authenticatable
             );
         })->get();
     }
+
+    public function is_friends_with(User $user): string
+    {
+        if ($this->friends()->where('id', $user->id)->count() > 0) {
+            return 'friends';
+        }
+
+        if ($this->receivedFriendships()->where('initiator_id', $user->id)->count() > 0) {
+            return 'request_incoming';
+        }
+
+        if ($this->initiatedFriendships()->where('recipient_id', $user->id)->count() > 0) {
+            return 'request_outgoing';
+        }
+
+        return 'not_friends';
+    }
 }

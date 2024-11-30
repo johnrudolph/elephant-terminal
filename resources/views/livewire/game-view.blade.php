@@ -268,21 +268,30 @@
 
         <flux:card class="w-full" >
             <div class="flex flex-row justify-between items-center text-zinc-800 dark:text-zinc-200" :class="{ 'animate-pulse': !is_player_turn && game_status === 'active' }">
-                <div class="flex flex-col items-start w-full">
-                    <flux:heading class="text-left w-full">
-                        {{ $this->opponent->user->name }}
-                    </flux:heading>
-                    <div class="mt-2 flex flex-row space-x-2 items-center">
-                        <div class="bg-red-500 w-8 h-8 rounded-lg flex items-center justify-center">
-                            <p class="font-bold text-white" x-text="opponent_hand"></p>
-                        </div>
-                        <p class="text-xs">remaining</p>
+            <div class="flex flex-col items-start w-full space-y-2">
+                <flux:heading class="text-left w-full">
+                    {{ $this->opponent->user->name }}
+                </flux:heading>
+                @if($this->opponent_is_friend === 'request_incoming')
+                    <flux:button variant="ghost" inset size="xs" wire:click="sendFriendRequest">Confirm friend request</flux:button>
+                @elseif($this->opponent_is_friend === 'request_outgoing')
+                    <flux:badge size="sm" color="gray">Request sent</flux:badge>
+                @elseif($this->opponent_is_friend === 'not_friends')
+                    <flux:button variant="ghost" inset size="xs" wire:click="sendFriendRequest">Send friend request</flux:button>
+                @elseif($this->opponent_is_friend === 'friends')
+                    <flux:badge size="sm" color="green">Friends</flux:badge>
+                @endif
+                <div class="flex flex-row space-x-2 mt-2 items-center">
+                    <div class="bg-red-500 w-8 h-8 rounded-lg flex items-center justify-center">
+                        <p class="font-bold text-white" x-text="opponent_hand"></p>
                     </div>
+                    <p class="text-xs">remaining</p>
                 </div>
-                <x-dynamic-component 
-                    :component="'svg.' . $this->opponent->victory_shape"
-                    class="w-14 h-14"
-                />
+            </div>
+            <x-dynamic-component 
+                :component="'svg.' . $this->opponent->victory_shape"
+                class="w-14 h-14"
+            />
             </div>
         </flux:card>
     </div>

@@ -3,9 +3,10 @@
 namespace App\Events;
 
 use App\Models\Game;
-use App\States\GameState;
-use Thunk\Verbs\Attributes\Autodiscovery\StateId;
 use Thunk\Verbs\Event;
+use App\States\GameState;
+use App\Events\GameStartedBroadcast;
+use Thunk\Verbs\Attributes\Autodiscovery\StateId;
 
 class GameStarted extends Event
 {
@@ -50,9 +51,9 @@ class GameStarted extends Event
     public function handle()
     {
         $game = Game::find($this->game_id);
-
         $game->status = 'active';
-
         $game->save();
+
+        GameStartedBroadcast::dispatch($game);
     }
 }

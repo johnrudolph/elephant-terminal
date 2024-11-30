@@ -15,6 +15,10 @@ class GameCreated extends Event
 
     public int $user_id;
 
+    public ?bool $is_ranked = false;
+
+    public ?bool $is_friends_only = false;
+
     public ?bool $is_single_player = false;
 
     public ?string $bot_difficulty = null;
@@ -73,7 +77,6 @@ class GameCreated extends Event
 
         Game::create([
             'id' => $this->game_id,
-            'code' => $this->generateGameCode(),
             'status' => 'created',
             'board' => $game->board,
             'valid_elephant_moves' => $game->validElephantMoves(),
@@ -81,15 +84,8 @@ class GameCreated extends Event
             'elephant_space' => $game->elephant_space,
             'phase' => $game->phase,
             'victors' => $game->victors,
+            'is_ranked' => $this->is_ranked,
+            'is_friends_only' => $this->is_friends_only,
         ]);
-    }
-
-    private function generateGameCode()
-    {
-        $code = substr(str_shuffle('ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890'), 0, 4);
-
-        return Game::where('code', $code)->exists()
-            ? $this->generateGameCode()
-            : $code;
     }
 }
