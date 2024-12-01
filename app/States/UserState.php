@@ -19,6 +19,8 @@ class UserState extends State
 
     public array $player_ids = [];
 
+    public int $rating = 1000;
+
     public function model(): User
     {
         return User::find($this->id);

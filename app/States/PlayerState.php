@@ -27,6 +27,16 @@ class PlayerState extends State
         return Player::find($this->id);
     }
 
+    public function opponent(): PlayerState
+    {
+        return $this->game()->players()->where('id', '!=', $this->id)->first();
+    }
+
+    public function user(): UserState
+    {
+        return UserState::load($this->user_id);
+    }
+
     public function game(): GameState
     {
         return GameState::load($this->game_id);

@@ -55,7 +55,7 @@ class GameView extends Component
     #[Computed]
     public function opponent_is_friend()
     {
-        return $this->user->is_friends_with($this->opponent->user);
+        return $this->user->friendship_status_with($this->opponent->user);
     }
 
     #[Computed]

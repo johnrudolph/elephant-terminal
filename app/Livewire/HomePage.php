@@ -37,14 +37,17 @@ class HomePage extends Component
             ->get()
             ->filter(function ($game) {
                 return ! $game->is_friends_only
-                || $game->players->first()->user->is_friends_with($this->user);
+                || $game->players->first()->user->friendship_status_with($this->user);
+            })
+            ->reject(function ($game) {
+                return $game->players->first()->user->id === $this->user->id;
             })
             ->sortByDesc('created_at')
             ->map(function ($game) {
                 return [
                     'id' => $game->id,
                     'player' => $game->players->first()->user->name,
-                    'is_friend' => $game->players->first()->user->is_friends_with($this->user),
+                    'is_friend' => $game->players->first()->user->friendship_status_with($this->user) === 'friends',
                 ];
             });
     }

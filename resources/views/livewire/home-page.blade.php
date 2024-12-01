@@ -56,10 +56,12 @@
                             <div wire:key="game-{{ $game['id'] }}">
                                 <flux:row>
                                     <flux:cell>
-                                        {{ $game['player'] }}
-                                        @if ($game['is_friend'])
-                                            <flux:badge size="xs" color="green">Friend</flux:badge>
-                                        @endif
+                                        <div class="flex items-center gap-2">
+                                            {{ $game['player'] }}
+                                            @if ($game['is_friend'])
+                                                <flux:badge size="xs" color="green">Friend</flux:badge>
+                                            @endif
+                                        </div>
                                     </flux:cell>
                                     <flux:cell class="flex justify-end">
                                         <flux:button variant="primary" size="xs">Join</flux:button>

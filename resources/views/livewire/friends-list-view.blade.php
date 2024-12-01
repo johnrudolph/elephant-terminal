@@ -31,33 +31,36 @@
         </flux:table>
     @endif
 
-    <div class="h-8"></div>
+    @if ($this->friends->count() > 0 || $this->outgoingRequests->count() > 0)
 
-    <flux:table>
-        <flux:columns>
-            <flux:column>Friends</flux:column>
-            <flux:column></flux:column>
-        </flux:columns>
+        <div class="h-8"></div>
 
-        <span class="h-8"></span>
+        <flux:table>
+            <flux:columns>
+                <flux:column>Friends</flux:column>
+                <flux:column></flux:column>
+            </flux:columns>
 
-        <flux:rows>
-            @foreach ($this->friends as $friend)
-                <flux:row>
-                    <flux:cell>{{ $friend->name }}</flux:cell>
-                    <flux:cell class="flex justify-end">
-                        <flux:badge color="green" size="xs" inset="top bottom">Friend</flux:badge>
-                    </flux:cell>
-                </flux:row>
-            @endforeach
-            @foreach ($this->outgoingRequests as $request)
-                <flux:row>
-                    <flux:cell>{{ $request->recipient->name }}</flux:cell>
-                    <flux:cell class="flex justify-end"><flux:badge color="gray" size="xs" inset="top bottom">Requested</flux:badge></flux:cell>
-                </flux:row>
-            @endforeach
-        </flux:rows>
-    </flux:table>
+            <span class="h-8"></span>
+
+            <flux:rows>
+                @foreach ($this->friends as $friend)
+                    <flux:row>
+                        <flux:cell>{{ $friend->name }}</flux:cell>
+                        <flux:cell class="flex justify-end">
+                            <flux:badge color="green" size="xs" inset="top bottom">Friend</flux:badge>
+                        </flux:cell>
+                    </flux:row>
+                @endforeach
+                @foreach ($this->outgoingRequests as $request)
+                    <flux:row>
+                        <flux:cell>{{ $request->recipient->name }}</flux:cell>
+                        <flux:cell class="flex justify-end"><flux:badge color="gray" size="xs" inset="top bottom">Requested</flux:badge></flux:cell>
+                    </flux:row>
+                @endforeach
+            </flux:rows>
+        </flux:table>
+    @endif
 
     <flux:toast />
 </div>

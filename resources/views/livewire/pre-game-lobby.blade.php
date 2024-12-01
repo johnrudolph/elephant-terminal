@@ -1,14 +1,17 @@
-<div x-init="
-    window.addEventListener('beforeunload', () => {
-        Livewire.emit('disconnected');
-    });
+<div 
+    x-init="
+        window.addEventListener('beforeunload', () => {
+            console.log('beforeunload');
+            $dispatch('disconnected');
+        });
 
-    document.addEventListener('visibilitychange', () => {
-        if (document.visibilityState === 'hidden') {
-            Livewire.emit('disconnected');
-        }
-    });
-
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'hidden') {
+                console.log('visibilitychange hidden');
+                $dispatch('disconnected');
+            }
+        });
+    "
     wire:disconnected="$wire.handleDisconnect()"
 >
     @if($this->game->players->count() === 1 && $this->player)

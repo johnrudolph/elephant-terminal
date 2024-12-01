@@ -92,7 +92,7 @@ class User extends Authenticatable
         })->get();
     }
 
-    public function is_friends_with(User $user): string
+    public function friendship_status_with(User $user): string
     {
         if ($this->friends()->where('id', $user->id)->count() > 0) {
             return 'friends';
