@@ -6,6 +6,7 @@ use App\Models\Game;
 use App\Models\Player;
 use Livewire\Component;
 use App\Events\GameStarted;
+use App\Events\GameAbandoned;
 use App\Events\PlayerCreated;
 use Livewire\Attributes\Computed;
 use Illuminate\Support\Facades\Auth;
@@ -43,6 +44,10 @@ class PreGameLobby extends Component
     public function mount(Game $game)
     {
         $this->game = $game;
+
+        if ($this->game->status === 'abandoned') {
+            return redirect()->route('home');
+        }
     }
 
     public function handlePlayerCreated($event)
@@ -73,5 +78,12 @@ class PreGameLobby extends Component
     public function render()
     {
         return view('livewire.pre-game-lobby');
+    }
+
+    protected $listeners = ['disconnected' => 'handleDisconnect'];
+
+    public function handleDisconnect()
+    {
+        GameAbandoned::fire(game_id: $this->game->id);
     }
 }
