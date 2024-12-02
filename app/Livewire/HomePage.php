@@ -3,6 +3,7 @@
 namespace App\Livewire;
 
 use App\Models\Game;
+use App\Models\User;
 use App\Models\Player;
 use Livewire\Component;
 use App\Events\GameCreated;
@@ -64,7 +65,27 @@ class HomePage extends Component
             is_friends_only: $this->is_friends_only,
         )->game_id;
 
+        $victory_shape = collect(['square', 'line', 'el', 'zig'])->random();
+
+        PlayerCreated::fire(
+            game_id: $game_id,
+            user_id: $this->user->id,
+            is_host: true,
+            is_bot: false,
+            victory_shape: $victory_shape,
+        );
+
         if ($this->is_bot_game) {
+            $bot_id = User::where('email', 'bot@bot.bot')->first()->id;
+
+            PlayerCreated::fire(
+                game_id: $game_id,
+                user_id: $bot_id,
+                is_host: false,
+                is_bot: true,
+                victory_shape: $victory_shape,
+            );
+
             GameStarted::fire(game_id: $game_id);
         }
 
@@ -75,9 +96,14 @@ class HomePage extends Component
 
     public function join(string $game_id)
     {
+        $victory_shape = Game::find($game_id)->players->first()->victory_shape;
+
         PlayerCreated::fire(
             game_id: (int) $game_id,
             user_id: $this->user->id,
+            is_host: false,
+            is_bot: false,
+            victory_shape: $victory_shape,
         );
 
         Verbs::commit();

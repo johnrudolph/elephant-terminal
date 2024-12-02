@@ -23,8 +23,6 @@ class GameCreated extends Event
 
     public ?string $bot_difficulty = 'hard';
 
-    public ?string $victory_shape = null;
-
     public function apply(GameState $state)
     {
         $state->status = 'created';
@@ -37,39 +35,6 @@ class GameCreated extends Event
 
         $state->phase = $state::PHASE_PLACE_TILE;
     }
-
-    // public function fired()
-    // {
-    //     if (! $this->victory_shape) {
-    //         $this->victory_shape = collect([
-    //             'square', 
-    //             'line', 
-    //             // 'pyramid', 
-    //             'el', 
-    //             'zig'
-    //         ])->random();
-    //     }
-
-    //     PlayerCreated::fire(
-    //         game_id: $this->game_id,
-    //         user_id: $this->user_id,
-    //         is_host: true,
-    //         is_bot: false,
-    //         victory_shape: $this->victory_shape,
-    //     );
-
-    //     if ($this->is_single_player) {
-    //         PlayerCreated::fire(
-    //             game_id: $this->game_id,
-    //             // @todo this is yucky
-    //             user_id: User::firstWhere('email', 'bot@bot.bot')->id,
-    //             is_host: false,
-    //             is_bot: true,
-    //             bot_difficulty: $this->bot_difficulty,
-    //             victory_shape: $this->victory_shape,
-    //         );
-    //     }
-    // }
 
     public function handle()
     {

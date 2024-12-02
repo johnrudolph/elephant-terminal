@@ -10,11 +10,12 @@
         game_status: @entangle('game_status'),
         valid_elephant_moves: @entangle('valid_elephant_moves'),
         valid_slides: @entangle('valid_slides'),
+        animating: false,
         get tile_phase() {
-            return this.is_player_turn && this.phase === 'tile' && this.game_status === 'active';
+            return !this.animating && this.is_player_turn && this.phase === 'tile' && this.game_status === 'active';
         },
         get elephant_phase() {
-            return this.is_player_turn && this.phase === 'move' && this.game_status === 'active';
+            return !this.animating && this.is_player_turn && this.phase === 'move' && this.game_status === 'active';
         },
 
         spaceToCoords(space) {
@@ -46,15 +47,18 @@
         },
 
         moveElephant(space) {
+            this.animating = true;
             this.elephant_space = space;
             const coords = this.spaceToCoords(space);
             this.$refs.elephant.style.transform = `translate(${coords.x}px, ${coords.y}px)`;
             
-            this.phase = 'tile';
-
-            if(this.opponent_hand > 0) {
-                this.is_player_turn = false;
-            }
+            setTimeout(() => {
+                this.phase = 'tile';
+                this.animating = false;
+                if(this.opponent_hand > 0) {
+                    this.is_player_turn = false;
+                }
+            }, 700);
         },
 
         playTile(direction, position, player_id) {
@@ -113,7 +117,6 @@
                 }
 
                 if (depth === 3) {
-                    console.log(existingTile);
                     const currentX = existingTile.x || 0;
                     const currentY = existingTile.y || 0;
 
@@ -235,12 +238,17 @@
         });
 
         Livewire.on('opponent-played-tile', async function(data) {
+            $data.animating = true;
             playTile(data[0].direction, data[0].position, data[0].player_id);
         });
-        
-        $watch('elephant_space', function(value) {
-            const coords = $data.spaceToCoords(value);
+
+        Livewire.on('opponent-moved-elephant', async function(data) {
+            $data.animating = true;
+            const coords = $data.spaceToCoords(data[0].position);
             $refs.elephant.style.transform = `translate(${coords.x}px, ${coords.y}px)`;
+            setTimeout(() => {
+                $data.animating = false;
+            }, 700);
         });
     "
     class="min-h-screen flex items-center justify-center flex-col space-y-8"
@@ -294,6 +302,13 @@
             />
             </div>
         </flux:card>
+    </div>
+
+    <div class="fixed top-4 right-4 bg-black/50 text-white p-2 rounded space-y-1">
+        <div>Phase: <span x-text="phase"></span></div>
+        <div>Animating: <span x-text="animating"></span></div>
+        <div>Is Player Turn: <span x-text="is_player_turn"></span></div>
+        <div>Game Status: <span x-text="game_status"></span></div>
     </div>
 
     {{-- Gameboard --}}

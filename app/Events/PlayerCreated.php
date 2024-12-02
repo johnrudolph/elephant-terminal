@@ -20,7 +20,7 @@ class PlayerCreated extends Event
 
     public int $user_id;
 
-    public ?string $victory_shape;
+    public string $victory_shape;
 
     public bool $is_host;
 
@@ -48,14 +48,10 @@ class PlayerCreated extends Event
         $this->is_host
             ? $state->player_1_victory_shape = $this->victory_shape
             : $state->player_2_victory_shape = $this->victory_shape;
-
-        dump($state);
     }
 
     public function handle()
     {
-        dump($this->game_id);
-
         Player::create([
             'id' => $this->player_id,
             'game_id' => $this->game_id,
@@ -71,10 +67,6 @@ class PlayerCreated extends Event
             $game->current_player_id = $this->player_id;
             $game->save();
         }
-
-        User::find($this->user_id)->games()->get()
-            ->filter(fn($g) => $g->status === 'created' && $g->id !== $this->game_id)
-            ->each(fn($g) => $g->delete());
 
         PlayerCreatedBroadcast::dispatch($game);
     }

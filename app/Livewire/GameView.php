@@ -149,6 +149,11 @@ class GameView extends Component
             return;
         }
 
+        $this->dispatch('opponent-moved-elephant', [
+            'position' => $move->elephant_after,
+            'player_id' => (string) $move->player_id
+        ]);
+
         $this->game->refresh();
 
         $this->elephant_space = $move->elephant_after;
