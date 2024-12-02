@@ -54,6 +54,18 @@ class User extends Authenticatable
         return UserState::load($this->id);
     }
 
+    public function games()
+    {
+        return $this->hasManyThrough(
+            Game::class,     // The final model we want to access
+            Player::class,   // The intermediate model
+            'user_id',      // Foreign key on players table
+            'id',           // Local key on games table
+            'id',           // Local key on users table
+            'game_id'       // Foreign key on players table
+        );
+    }
+
     public function players()
     {
         return $this->hasMany(Player::class);

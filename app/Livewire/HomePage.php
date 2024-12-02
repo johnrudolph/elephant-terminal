@@ -3,9 +3,11 @@
 namespace App\Livewire;
 
 use App\Models\Game;
+use App\Models\Player;
 use Livewire\Component;
 use App\Events\GameCreated;
 use App\Events\GameStarted;
+use App\Events\PlayerCreated;
 use Thunk\Verbs\Facades\Verbs;
 use Livewire\Attributes\Computed;
 
@@ -45,19 +47,11 @@ class HomePage extends Component
             ->sortByDesc('created_at')
             ->map(function ($game) {
                 return [
-                    'id' => $game->id,
+                    'id' => (string) $game->id,
                     'player' => $game->players->first()->user->name,
                     'is_friend' => $game->players->first()->user->friendship_status_with($this->user) === 'friends',
                 ];
             });
-    }
-
-    #[Computed]
-    public function friend_games()
-    {
-        return $this->all_upcoming_games->filter(function ($game) {
-            return $game->players->first()->user->isFriendsWith($this->user);
-        });
     }
 
     public function newGame()
@@ -77,6 +71,18 @@ class HomePage extends Component
         Verbs::commit();
 
         return redirect()->route('games.show', $game_id);
+    }
+
+    public function join(string $game_id)
+    {
+        PlayerCreated::fire(
+            game_id: (int) $game_id,
+            user_id: $this->user->id,
+        );
+
+        Verbs::commit();
+
+        return redirect()->route('games.show', (int) $game_id);
     }
 
     public function render()

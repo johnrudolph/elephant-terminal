@@ -15,13 +15,13 @@ class GameCreated extends Event
 
     public int $user_id;
 
-    public ?bool $is_ranked = false;
+    public bool $is_ranked;
 
-    public ?bool $is_friends_only = false;
+    public bool $is_friends_only;
 
-    public ?bool $is_single_player = false;
+    public bool $is_single_player;
 
-    public ?string $bot_difficulty = null;
+    public ?string $bot_difficulty = 'hard';
 
     public ?string $victory_shape = null;
 
@@ -38,42 +38,44 @@ class GameCreated extends Event
         $state->phase = $state::PHASE_PLACE_TILE;
     }
 
-    public function fired()
-    {
-        if (! $this->victory_shape) {
-            $this->victory_shape = collect([
-                'square', 
-                'line', 
-                // 'pyramid', 
-                'el', 
-                'zig'
-            ])->random();
-        }
+    // public function fired()
+    // {
+    //     if (! $this->victory_shape) {
+    //         $this->victory_shape = collect([
+    //             'square', 
+    //             'line', 
+    //             // 'pyramid', 
+    //             'el', 
+    //             'zig'
+    //         ])->random();
+    //     }
 
-        PlayerCreated::fire(
-            game_id: $this->game_id,
-            user_id: $this->user_id,
-            is_host: true,
-            is_bot: false,
-            victory_shape: $this->victory_shape,
-        );
+    //     PlayerCreated::fire(
+    //         game_id: $this->game_id,
+    //         user_id: $this->user_id,
+    //         is_host: true,
+    //         is_bot: false,
+    //         victory_shape: $this->victory_shape,
+    //     );
 
-        if ($this->is_single_player) {
-            PlayerCreated::fire(
-                game_id: $this->game_id,
-                // @todo this is yucky
-                user_id: User::firstWhere('email', 'bot@bot.bot')->id,
-                is_host: false,
-                is_bot: true,
-                bot_difficulty: $this->bot_difficulty,
-                victory_shape: $this->victory_shape,
-            );
-        }
-    }
+    //     if ($this->is_single_player) {
+    //         PlayerCreated::fire(
+    //             game_id: $this->game_id,
+    //             // @todo this is yucky
+    //             user_id: User::firstWhere('email', 'bot@bot.bot')->id,
+    //             is_host: false,
+    //             is_bot: true,
+    //             bot_difficulty: $this->bot_difficulty,
+    //             victory_shape: $this->victory_shape,
+    //         );
+    //     }
+    // }
 
     public function handle()
     {
         $game = $this->state(GameState::class);
+
+        dump(Game::all()->pluck('id'));
 
         Game::create([
             'id' => $this->game_id,
@@ -87,5 +89,17 @@ class GameCreated extends Event
             'is_ranked' => $this->is_ranked,
             'is_friends_only' => $this->is_friends_only,
         ]);
+
+//         dd(
+// User::find($this->user_id)->games(),
+// Game::all()
+//         );
+
+        User::find($this->user_id)->games
+            ->filter(fn($g) => $g->status === 'created' && $g->id !== $this->game_id)
+            ->each(function ($game) {
+                $game->status = 'abandoned';
+                $game->save();
+            });
     }
 }

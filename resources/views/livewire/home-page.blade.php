@@ -64,7 +64,7 @@
                                         </div>
                                     </flux:cell>
                                     <flux:cell class="flex justify-end">
-                                        <flux:button variant="primary" size="xs">Join</flux:button>
+                                        <flux:button wire:click="join({{ $game['id'] }})" variant="primary" size="xs">Join</flux:button>
                                     </flux:cell>
                                 </flux:row>
                             </div>
