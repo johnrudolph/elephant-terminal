@@ -30,6 +30,10 @@
             {{ $slot }}
         </flux:main>
 
+        <footer class="py-16 text-center text-sm text-black dark:text-white/70">
+            Made with ❤️ by <a href="https://catacombian.com"><span class="font-bold text-zinc-900 dark:text-zinc-200">Catacombian Games</span></a>
+        </footer>
+
         @fluxScripts
     </body>
 </html>
