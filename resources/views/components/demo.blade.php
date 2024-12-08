@@ -3,18 +3,19 @@
         tiles: [],
         nextId: 1,
         init: 'true',
-        animating: false,
         valid_slides: [],
         elephant_space: 100,
         elephant_phase: false,
         tile_phase: false,
+        current_player: 1,
+        initialized: false,
 
         spaceToCoords(space) {
             const row = Math.floor((space - 1) / 4);
             const col = (space - 1) % 4;
             return {
-                x: col * 60 + col,
-                y: row * 60 + row
+                x: col * 61,  // 58px tile width + 2px gap
+                y: row * 61   // 58px tile height + 2px gap
             };
         },
 
@@ -97,7 +98,6 @@
                     }
                 } else {
                     const nextCoords = this.spaceToCoords(nextSpace);
-                    console.log(nextCoords);
                     const updatedTiles = this.tiles.map(tile => {
                         if (tile.id === existingTile.id) {
                             return {
@@ -127,7 +127,7 @@
                 id: this.nextId++,
                 x: startPosition[direction].x,
                 y: startPosition[direction].y,
-                playerId: player_id, 
+                playerId: player_id,
                 space: targetSpace
             };
             this.tiles.push(newTile);
@@ -136,7 +136,7 @@
                 const updatedTiles = this.tiles.map(tile => {
                     if (tile.id === newTile.id) {
                         return {
-                            id: tile.id,
+                            ...tile,
                             playerId: tile.playerId,
                             space: tile.space,
                             x: finalPosition.x,
@@ -150,7 +150,19 @@
         }
     }" 
     x-init="
-
+        if( ! initialized) {
+            initialized = true;
+        
+            const directions = ['from_left', 'from_right', 'up', 'down'];
+        
+            setInterval(() => {
+                const randomDirection = directions[Math.floor(Math.random() * directions.length)];
+                const randomPosition = Math.floor(Math.random() * 4);
+                
+                playTile(randomDirection, randomPosition, current_player);
+                current_player = current_player === 1 ? 2 : 1;
+            }, 1000);
+        }
     "
     class="flex items-center justify-center flex-col space-y-8"
 >
@@ -199,15 +211,7 @@
             <!-- Grid spaces -->
             <template x-for="i in 16">
                 <div class="relative">
-                    <button 
-                        x-show="elephant_phase && valid_elephant_moves.includes(i) && game_status === 'active' && is_player_turn"
-                        @click="moveElephant(i); $wire.moveElephant(i)" 
-                        class="absolute inset-0 bg-slate-200 opacity-20 animate-pulse rounded-lg z-20"
-                    ></button>
-                    <div 
-                        class="absolute inset-0 bg-gray-100 dark:bg-zinc-700 rounded-lg"
-                        x-show="!elephant_phase || !valid_elephant_moves.includes(i)"
-                    ></div>
+                    <div class="absolute w-58 h-58 inset-0 bg-gray-100 dark:bg-zinc-700 rounded-lg"></div>
                 </div>
             </template>
             

@@ -66,7 +66,7 @@ class HomePage extends Component
             is_friends_only: $this->is_friends_only,
         )->game_id;
 
-        $victory_shape = collect(['square', 'line', 'el', 'zig'])->random();
+        $victory_shape = $this->is_bot_game ? collect(['square', 'line', 'el', 'zig'])->random() : collect(['square', 'line'])->random();
 
         PlayerCreated::fire(
             game_id: $game_id,
@@ -97,7 +97,7 @@ class HomePage extends Component
 
     public function join(string $game_id)
     {
-        $victory_shape = Game::find($game_id)->players->first()->victory_shape;
+        $victory_shape = collect(['el', 'zig'])->random();
 
         PlayerCreated::fire(
             game_id: (int) $game_id,

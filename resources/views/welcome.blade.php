@@ -12,22 +12,28 @@
 
         <!-- Styles -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
-        @livewireStyles
         @fluxStyles
-        @livewireScripts
     </head>
     <body class="antialiased font-sans bg-white dark:bg-zinc-800 text-zinc-800 dark:text-zinc-200">
         <flux:container class="flex flex-col items-center justify-center">
-            <flux:card class="max-w-xl mt-16">
+            <flux:card class="max-w-xs mt-16">
                 <flux:heading size="xl">
                     Elephant in the Room
                 </flux:heading>
                 <flux:subheading>
-                    Your mission: build a simple shape. The catch? Your opponent can push your tiles around. And there's an elephant in the room.
+                    Your mission: build a simple shape. The catch? Your opponent can push your tiles around, and there's an elephant in the room.
                 </flux:subheading>
+                <div class="mt-4 flex flex-row space-x-4 justify-center">
+                    @if (auth()->user())
+                        <flux:button variant="primary" href="{{ route('dashboard') }}">Play</flux:button>
+                    @else
+                        <flux:button variant="primary" href="{{ route('register') }}">Register</flux:button>
+                        <flux:button variant="filled" href="{{ route('login') }}">Login</flux:button>
+                    @endif
+                </div>
             </flux:card>
             <x-demo />
-            <footer class="py-16 text-center text-sm text-black dark:text-white/70">
+            <footer class="fixed bottom-0 left-0 right-0 py-4 text-center text-sm text-black dark:text-white/70 bg-white dark:bg-zinc-800">
                 Made with ❤️ by <a href="https://catacombian.com"><span class="font-bold text-zinc-900 dark:text-zinc-200">Catacombian Games</span></a>
             </footer>
         </flux:container>
