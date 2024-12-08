@@ -3,9 +3,10 @@
 namespace App\Events;
 
 use App\Models\Game;
-use App\States\GameState;
-use Thunk\Verbs\Attributes\Autodiscovery\StateId;
 use Thunk\Verbs\Event;
+use App\States\GameState;
+use App\States\PlayerState;
+use Thunk\Verbs\Attributes\Autodiscovery\StateId;
 
 class GameEnded extends Event
 {
@@ -17,6 +18,10 @@ class GameEnded extends Event
         $state->status = 'complete';
 
         $state->victors = $state->victor($state->board);
+
+        if ($state->is_ranked) {
+            $state->players()->each(fn($p) => $p->user()->rating = $this->calculateNewRating($p, $state));
+        }
     }
 
     public function handle()
@@ -28,5 +33,31 @@ class GameEnded extends Event
         $game->victors = $this->state(GameState::class)->victors;
 
         $game->save();
+
+        $game->players->each(function ($player) {
+            $user = $player->user;
+
+            $user->rating = $user->state()->rating;
+            $user->save();
+        });
+    }
+
+    public function calculateNewRating(PlayerState $player, GameState $game): int
+    {
+        $k_factor = 32;
+        $player_rating = $player->user()->rating;
+        $opponent_rating = $player->opponent()->user()->rating;
+
+        $expected_score = 1 / (1 + (10 ** (($opponent_rating - $player_rating) / 400)));
+
+        $actual_score = match(true) {
+            count($game->victors) === 1 && in_array($player->id, $game->victors) => 1.0,
+            count($game->victors) === 1 => 0.0,
+            default => 0.5 // draw
+        };
+
+        $new_rating = $player_rating + ($k_factor * ($actual_score - $expected_score));
+        
+        return max(100, min(3000, round($new_rating)));
     }
 }

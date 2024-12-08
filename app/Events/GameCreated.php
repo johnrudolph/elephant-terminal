@@ -15,17 +15,21 @@ class GameCreated extends Event
 
     public int $user_id;
 
-    public ?bool $is_single_player = false;
+    public bool $is_ranked;
 
-    public ?string $bot_difficulty = null;
+    public bool $is_friends_only;
 
-    public ?string $victory_shape = null;
+    public bool $is_single_player;
+
+    public ?string $bot_difficulty = 'hard';
 
     public function apply(GameState $state)
     {
         $state->status = 'created';
 
         $state->is_single_player = $this->is_single_player;
+
+        $state->is_ranked = $this->is_ranked;
 
         $state->victors = [];
 
@@ -34,40 +38,12 @@ class GameCreated extends Event
         $state->phase = $state::PHASE_PLACE_TILE;
     }
 
-    public function fired()
-    {
-        if (! $this->victory_shape) {
-            $this->victory_shape = collect(['square', 'line', 'pyramid', 'el', 'zig'])->random();
-        }
-
-        PlayerCreated::fire(
-            game_id: $this->game_id,
-            user_id: $this->user_id,
-            is_host: true,
-            is_bot: false,
-            victory_shape: $this->victory_shape,
-        );
-
-        if ($this->is_single_player) {
-            PlayerCreated::fire(
-                game_id: $this->game_id,
-                // @todo this is yucky
-                user_id: User::firstWhere('email', 'bot@bot.bot')->id,
-                is_host: false,
-                is_bot: true,
-                bot_difficulty: $this->bot_difficulty,
-                victory_shape: $this->victory_shape,
-            );
-        }
-    }
-
     public function handle()
     {
         $game = $this->state(GameState::class);
 
         Game::create([
             'id' => $this->game_id,
-            'code' => $this->generateGameCode(),
             'status' => 'created',
             'board' => $game->board,
             'valid_elephant_moves' => $game->validElephantMoves(),
@@ -75,15 +51,20 @@ class GameCreated extends Event
             'elephant_space' => $game->elephant_space,
             'phase' => $game->phase,
             'victors' => $game->victors,
+            'is_ranked' => $this->is_ranked,
+            'is_friends_only' => $this->is_friends_only,
         ]);
-    }
 
-    private function generateGameCode()
-    {
-        $code = substr(str_shuffle('ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890'), 0, 4);
+//         dd(
+// User::find($this->user_id)->games(),
+// Game::all()
+//         );
 
-        return Game::where('code', $code)->exists()
-            ? $this->generateGameCode()
-            : $code;
+        User::find($this->user_id)->games
+            ->filter(fn($g) => $g->status === 'created' && $g->id !== $this->game_id)
+            ->each(function ($game) {
+                $game->status = 'abandoned';
+                $game->save();
+            });
     }
 }

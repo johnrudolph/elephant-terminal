@@ -16,6 +16,8 @@ class GameState extends State
 
     public bool $is_single_player;
 
+    public bool $is_ranked;
+
     public int $player_1_id;
 
     public int $player_2_id;

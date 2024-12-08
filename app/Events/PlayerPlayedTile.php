@@ -6,6 +6,7 @@ use App\Models\Game;
 use App\Models\Move;
 use App\Models\Player;
 use Thunk\Verbs\Event;
+use App\Events\GameEnded;
 use App\States\GameState;
 use App\States\PlayerState;
 use Thunk\Verbs\Attributes\Autodiscovery\StateId;
@@ -123,6 +124,13 @@ class PlayerPlayedTile extends Event
         if (count($state->victor($state->board)) > 0 || $both_player_hands_are_empty) {
             $state->status = 'complete';
             $state->victors = $state->victor($state->board);
+        }
+    }
+
+    public function fired()
+    {
+        if ($this->state(GameState::class)->status === 'complete') {
+            GameEnded::fire(game_id: $this->game_id);
         }
     }
 

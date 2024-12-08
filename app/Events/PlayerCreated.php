@@ -3,6 +3,7 @@
 namespace App\Events;
 
 use App\Models\Game;
+use App\Models\User;
 use App\Models\Player;
 use Thunk\Verbs\Event;
 use App\States\GameState;
@@ -19,11 +20,11 @@ class PlayerCreated extends Event
 
     public int $user_id;
 
-    public ?string $victory_shape;
+    public string $victory_shape;
 
-    public ?bool $is_host = false;
+    public bool $is_host;
 
-    public ?bool $is_bot = false;
+    public bool $is_bot;
 
     public function apply(PlayerState $state)
     {
@@ -34,12 +35,6 @@ class PlayerCreated extends Event
         $state->is_bot = $this->is_bot;
 
         $state->is_host = $this->is_host;
-
-        $game = $this->state(GameState::class);
-
-        if(! $this->is_host) {
-            $this->victory_shape = PlayerState::load($game->player_1_id)->victory_shape;
-        }
 
         $state->victory_shape = $this->victory_shape;
     }
@@ -55,13 +50,6 @@ class PlayerCreated extends Event
             : $state->player_2_victory_shape = $this->victory_shape;
     }
 
-    public function fired()
-    {
-        if (! $this->is_host) {
-            GameStarted::fire(game_id: $this->game_id);
-        }
-    }
-
     public function handle()
     {
         Player::create([
@@ -73,8 +61,13 @@ class PlayerCreated extends Event
             'victory_shape' => $this->victory_shape,
         ]);
 
-        Game::find($this->game_id)->update([
-            'current_player_id' => $this->state(GameState::class)->current_player_id,
-        ]);
+        $game = Game::find($this->game_id);
+
+        if ($this->is_host) {
+            $game->current_player_id = $this->player_id;
+            $game->save();
+        }
+
+        PlayerCreatedBroadcast::dispatch($game);
     }
 }

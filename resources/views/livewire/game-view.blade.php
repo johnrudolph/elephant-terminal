@@ -1,4 +1,7 @@
-<div wire:ignore x-data="{
+<div 
+    wire:ignore 
+    wire:poll.5000ms="check_for_moves"
+    x-data="{
         tiles: [],
         elephant_space: @entangle('elephant_space'),
         nextId: 1,
@@ -10,11 +13,12 @@
         game_status: @entangle('game_status'),
         valid_elephant_moves: @entangle('valid_elephant_moves'),
         valid_slides: @entangle('valid_slides'),
+        animating: false,
         get tile_phase() {
-            return this.is_player_turn && this.phase === 'tile' && this.game_status === 'active';
+            return !this.animating && this.is_player_turn && this.phase === 'tile' && this.game_status === 'active';
         },
         get elephant_phase() {
-            return this.is_player_turn && this.phase === 'move' && this.game_status === 'active';
+            return !this.animating && this.is_player_turn && this.phase === 'move' && this.game_status === 'active';
         },
 
         spaceToCoords(space) {
@@ -46,15 +50,18 @@
         },
 
         moveElephant(space) {
+            this.animating = true;
             this.elephant_space = space;
             const coords = this.spaceToCoords(space);
             this.$refs.elephant.style.transform = `translate(${coords.x}px, ${coords.y}px)`;
             
-            this.phase = 'tile';
-
-            if(this.opponent_hand > 0) {
-                this.is_player_turn = false;
-            }
+            setTimeout(() => {
+                this.phase = 'tile';
+                this.animating = false;
+                if(this.opponent_hand > 0) {
+                    this.is_player_turn = false;
+                }
+            }, 700);
         },
 
         playTile(direction, position, player_id) {
@@ -113,7 +120,6 @@
                 }
 
                 if (depth === 3) {
-                    console.log(existingTile);
                     const currentX = existingTile.x || 0;
                     const currentY = existingTile.y || 0;
 
@@ -235,12 +241,17 @@
         });
 
         Livewire.on('opponent-played-tile', async function(data) {
+            $data.animating = true;
             playTile(data[0].direction, data[0].position, data[0].player_id);
         });
-        
-        $watch('elephant_space', function(value) {
-            const coords = $data.spaceToCoords(value);
+
+        Livewire.on('opponent-moved-elephant', async function(data) {
+            $data.animating = true;
+            const coords = $data.spaceToCoords(data[0].position);
             $refs.elephant.style.transform = `translate(${coords.x}px, ${coords.y}px)`;
+            setTimeout(() => {
+                $data.animating = false;
+            }, 700);
         });
     "
     class="min-h-screen flex items-center justify-center flex-col space-y-8"
@@ -251,6 +262,7 @@
                 <div class="flex flex-col items-start w-full">
                     <flux:heading class="text-left w-full">
                         {{ $this->player->user->name }}
+                        <flux:badge color="gray" size="sm" variant="outline" class="ml-1">{{ $this->player->user->rating }}</flux:badge>
                     </flux:heading>
                     <div class="mt-2 flex flex-row space-x-2 items-center">
                         <div class="bg-blue-500 w-8 h-8 rounded-lg flex items-center justify-center">
@@ -268,23 +280,40 @@
 
         <flux:card class="w-full" >
             <div class="flex flex-row justify-between items-center text-zinc-800 dark:text-zinc-200" :class="{ 'animate-pulse': !is_player_turn && game_status === 'active' }">
-                <div class="flex flex-col items-start w-full">
-                    <flux:heading class="text-left w-full">
-                        {{ $this->opponent->user->name }}
-                    </flux:heading>
-                    <div class="mt-2 flex flex-row space-x-2 items-center">
-                        <div class="bg-red-500 w-8 h-8 rounded-lg flex items-center justify-center">
-                            <p class="font-bold text-white" x-text="opponent_hand"></p>
-                        </div>
-                        <p class="text-xs">remaining</p>
+            <div class="flex flex-col items-start w-full space-y-2">
+                <flux:heading class="text-left w-full">
+                    {{ $this->opponent->user->name }}
+                    <flux:badge color="gray" size="sm" variant="outline" class="ml-1">{{ $this->opponent->user->rating }}</flux:badge>
+                </flux:heading>
+                @if($this->opponent_is_friend === 'request_incoming')
+                    <flux:button variant="ghost" inset size="xs" wire:click="sendFriendRequest">Confirm friend request</flux:button>
+                @elseif($this->opponent_is_friend === 'request_outgoing')
+                    <flux:badge size="sm" color="gray">Request sent</flux:badge>
+                @elseif($this->opponent_is_friend === 'not_friends')
+                    <flux:button variant="ghost" inset size="xs" wire:click="sendFriendRequest">Send friend request</flux:button>
+                @elseif($this->opponent_is_friend === 'friends')
+                    <flux:badge size="sm" color="green">Friends</flux:badge>
+                @endif
+                <div class="flex flex-row space-x-2 mt-2 items-center">
+                    <div class="bg-red-500 w-8 h-8 rounded-lg flex items-center justify-center">
+                        <p class="font-bold text-white" x-text="opponent_hand"></p>
                     </div>
+                    <p class="text-xs">remaining</p>
                 </div>
-                <x-dynamic-component 
-                    :component="'svg.' . $this->opponent->victory_shape"
-                    class="w-14 h-14"
-                />
+            </div>
+            <x-dynamic-component 
+                :component="'svg.' . $this->opponent->victory_shape"
+                class="w-14 h-14"
+            />
             </div>
         </flux:card>
+    </div>
+
+    <div class="fixed top-4 right-4 bg-black/50 text-white p-2 rounded space-y-1">
+        <div>Phase: <span x-text="phase"></span></div>
+        <div>Animating: <span x-text="animating"></span></div>
+        <div>Is Player Turn: <span x-text="is_player_turn"></span></div>
+        <div>Game Status: <span x-text="game_status"></span></div>
     </div>
 
     {{-- Gameboard --}}

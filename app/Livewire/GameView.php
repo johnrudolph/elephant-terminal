@@ -8,6 +8,7 @@ use App\Models\Player;
 use Livewire\Component;
 use Thunk\Verbs\Facades\Verbs;
 use App\Events\PlayerPlayedTile;
+use App\Events\UserAddedFriend;
 use Livewire\Attributes\Computed;
 use Illuminate\Support\Facades\Auth;
 
@@ -27,7 +28,7 @@ class GameView extends Component
 
     public int $player_hand;
 
-    public int $opponent_hand;
+    public ?int $opponent_hand = 0;
 
     public array $valid_elephant_moves;
 
@@ -46,9 +47,15 @@ class GameView extends Component
     }
 
     #[Computed]
-    public function opponent(): Player
+    public function opponent(): ?Player
     {
         return $this->game->players->firstWhere('user_id', '!=', $this->user->id);
+    }
+
+    #[Computed]
+    public function opponent_is_friend()
+    {
+        return $this->user->friendship_status_with($this->opponent->user);
     }
 
     #[Computed]
@@ -59,9 +66,23 @@ class GameView extends Component
             ->toArray();
     }
 
+    #[Computed]
+    public function moves()
+    {
+        return $this->game->moves;
+    }
+
     public function mount(Game $game)
     {
         $this->game = $game;
+
+        if ($this->game->status === 'abandoned') {
+            return redirect()->route('dashboard');
+        }
+
+        if (! $this->player || ! $this->opponent) {
+            return redirect()->route('games.pre-game-lobby.show', $this->game);
+        }
 
         $this->board = $this->game->board;
 
@@ -75,12 +96,13 @@ class GameView extends Component
 
         $this->player_hand = $this->player->hand;
 
-        $this->opponent_hand = $this->opponent->hand;
+        $this->opponent_hand = $this->opponent?->hand;
 
         $this->valid_elephant_moves = $this->game->valid_elephant_moves;
 
         $this->valid_slides = $this->game->valid_slides;
     }
+
     public function playTile($direction, $index)
     {
         $space = match($direction) {
@@ -137,6 +159,11 @@ class GameView extends Component
             return;
         }
 
+        $this->dispatch('opponent-moved-elephant', [
+            'position' => $move->elephant_after,
+            'player_id' => (string) $move->player_id
+        ]);
+
         $this->game->refresh();
 
         $this->elephant_space = $move->elephant_after;
@@ -191,6 +218,23 @@ class GameView extends Component
         $this->game_status = $this->game->status;
 
         $this->is_player_turn = $this->game->current_player_id === (string) $this->player->id && $this->game->status === 'active';
+    }
+
+    public function sendFriendRequest()
+    {
+        UserAddedFriend::fire(
+            user_id: $this->user->id,
+            friend_id: $this->opponent->user->id,
+        );
+
+        Verbs::commit();
+
+        unset($this->opponent_is_friend);
+    }
+
+    public function check_for_moves()
+    {
+        unset($this->moves);
     }
 
     public function render()
