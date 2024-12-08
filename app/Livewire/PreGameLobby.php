@@ -38,15 +38,20 @@ class PreGameLobby extends Component
         return [
             "echo-private:games.{$this->game->id}:PlayerCreatedBroadcast" => 'handlePlayerCreated',
             "echo-private:games.{$this->game->id}:GameStartedBroadcast" => 'handleGameStarted',
+            "echo-private:games.{$this->game->id}:GameAbandonedBroadcast" => 'handleGameAbandoned',
         ];
     }
 
     public function mount(Game $game)
     {
         $this->game = $game;
+        $this->checkIfAbandoned();
+    }
 
+    public function checkIfAbandoned()
+    {
         if ($this->game->status === 'abandoned') {
-            return redirect()->route('home');
+            return redirect()->route('dashboard');
         }
     }
 
@@ -75,15 +80,15 @@ class PreGameLobby extends Component
         return redirect()->route('games.show', $this->game->id);
     }
 
+    public function leave()
+    {
+        GameAbandoned::fire(game_id: $this->game->id);
+
+        return redirect()->route('dashboard');
+    }
+
     public function render()
     {
         return view('livewire.pre-game-lobby');
-    }
-
-    protected $listeners = ['disconnected' => 'handleDisconnect'];
-
-    public function handleDisconnect()
-    {
-        GameAbandoned::fire(game_id: $this->game->id);
     }
 }

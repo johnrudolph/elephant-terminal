@@ -5,6 +5,7 @@ namespace App\Events;
 use App\Models\Game;
 use Thunk\Verbs\Event;
 use App\States\GameState;
+use App\Events\GameAbandonedBroadcast;
 use Thunk\Verbs\Attributes\Autodiscovery\StateId;
 
 class GameAbandoned extends Event
@@ -22,5 +23,7 @@ class GameAbandoned extends Event
         $game = Game::find($this->game_id);
         $game->status = 'abandoned';
         $game->save();
+
+        GameAbandonedBroadcast::dispatch($game);
     }
 }

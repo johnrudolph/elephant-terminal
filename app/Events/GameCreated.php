@@ -29,6 +29,8 @@ class GameCreated extends Event
 
         $state->is_single_player = $this->is_single_player;
 
+        $state->is_ranked = $this->is_ranked;
+
         $state->victors = [];
 
         $state->moves = [];
@@ -39,8 +41,6 @@ class GameCreated extends Event
     public function handle()
     {
         $game = $this->state(GameState::class);
-
-        dump(Game::all()->pluck('id'));
 
         Game::create([
             'id' => $this->game_id,

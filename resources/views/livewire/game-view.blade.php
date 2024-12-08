@@ -1,4 +1,7 @@
-<div wire:ignore x-data="{
+<div 
+    wire:ignore 
+    wire:poll.5000ms="check_for_moves"
+    x-data="{
         tiles: [],
         elephant_space: @entangle('elephant_space'),
         nextId: 1,
@@ -259,6 +262,7 @@
                 <div class="flex flex-col items-start w-full">
                     <flux:heading class="text-left w-full">
                         {{ $this->player->user->name }}
+                        <flux:badge color="gray" size="sm" variant="outline" class="ml-1">{{ $this->player->user->rating }}</flux:badge>
                     </flux:heading>
                     <div class="mt-2 flex flex-row space-x-2 items-center">
                         <div class="bg-blue-500 w-8 h-8 rounded-lg flex items-center justify-center">
@@ -279,6 +283,7 @@
             <div class="flex flex-col items-start w-full space-y-2">
                 <flux:heading class="text-left w-full">
                     {{ $this->opponent->user->name }}
+                    <flux:badge color="gray" size="sm" variant="outline" class="ml-1">{{ $this->opponent->user->rating }}</flux:badge>
                 </flux:heading>
                 @if($this->opponent_is_friend === 'request_incoming')
                     <flux:button variant="ghost" inset size="xs" wire:click="sendFriendRequest">Confirm friend request</flux:button>

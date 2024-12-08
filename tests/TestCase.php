@@ -13,13 +13,17 @@ use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
 
 abstract class TestCase extends BaseTestCase
 {
+    public User $john;
+
+    public User $lindsey;
+
     public Game $game;
 
     public Player $player_1;
 
     public Player $player_2;
 
-    public function bootMultiplayerGame(?string $victory_shape = 'square')
+    public function bootTwoHumans()
     {
         $john_id = UserCreated::fire(
             name: "John",
@@ -33,10 +37,18 @@ abstract class TestCase extends BaseTestCase
             password: "password",
         )->user_id;
 
+        $this->john = User::find($john_id);
+        $this->lindsey = User::find($lindsey_id);
+    }
+
+    public function bootMultiplayerGame(?string $victory_shape = 'square')
+    {
+        $this->bootTwoHumans();
+        
         $game_id = GameCreated::fire(
-            user_id: $john_id,
+            user_id: $this->john->id,
             victory_shape: $victory_shape,
-            is_ranked: false,
+            is_ranked: true,
             is_friends_only: false,
             is_single_player: false,
         )->game_id;
@@ -45,7 +57,7 @@ abstract class TestCase extends BaseTestCase
 
         $player_1_id = PlayerCreated::fire(
             game_id: $game_id,
-            user_id: $john_id,
+            user_id: $this->john->id,
             is_host: true,
             is_bot: false,
             victory_shape: $victory_shape,
@@ -55,7 +67,7 @@ abstract class TestCase extends BaseTestCase
 
         $player_2_id = PlayerCreated::fire(
             game_id: $game_id,
-            user_id: $lindsey_id,
+            user_id: $this->lindsey->id,
             is_host: false,
             is_bot: false,
             victory_shape: $victory_shape,
@@ -112,6 +124,20 @@ abstract class TestCase extends BaseTestCase
         $this->player_2 = Player::find($player_2_id);
 
         GameStarted::fire(game_id: $game_id);
+    }
+
+    public function bootUnjoinedGame()
+    {
+        $this->bootTwoHumans();
+
+        $game_id = GameCreated::fire(
+            user_id: $this->john->id,
+            is_single_player: false,
+            is_ranked: false,
+            is_friends_only: false,
+        )->game_id;
+
+        $this->game = Game::find($game_id);
     }
 
     public function dumpBoard()

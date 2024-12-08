@@ -4,7 +4,8 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-        <title>{{ $title ?? 'Page Title' }}</title>
+        <title>{{ config('app.name', 'Elephant in the Room') }}{{ !empty($title) ? ' - ' . $title : '' }}</title>
+        <link rel="icon" href="{{ asset('favicon.ico') }}">
 
         @vite(['resources/css/app.css', 'resources/js/app.js'])
         @livewireStyles

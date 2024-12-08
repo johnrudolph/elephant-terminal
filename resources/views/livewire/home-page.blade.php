@@ -58,13 +58,14 @@
                                     <flux:cell>
                                         <div class="flex items-center gap-2">
                                             {{ $game['player'] }}
+                                            <flux:badge color="gray" size="sm" variant="outline">{{ $game['rating'] }}</flux:badge>
                                             @if ($game['is_friend'])
                                                 <flux:badge size="xs" color="green">Friend</flux:badge>
                                             @endif
                                         </div>
                                     </flux:cell>
                                     <flux:cell class="flex justify-end">
-                                        <flux:button wire:click="join({{ $game['id'] }})" variant="primary" size="xs">Join</flux:button>
+                                        <flux:button wire:click="join('{{ $game['id'] }}')" variant="primary" size="xs">Join</flux:button>
                                     </flux:cell>
                                 </flux:row>
                             </div>

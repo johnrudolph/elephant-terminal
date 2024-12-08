@@ -20,7 +20,7 @@ class GameEnded extends Event
         $state->victors = $state->victor($state->board);
 
         if ($state->is_ranked) {
-            $state->players()->each(fn($p) => $p->rating = $this->calculateNewRating($p, $state));
+            $state->players()->each(fn($p) => $p->user()->rating = $this->calculateNewRating($p, $state));
         }
     }
 
@@ -34,18 +34,16 @@ class GameEnded extends Event
 
         $game->save();
 
-        $game->players()->each(function ($player) {
-            $user_state = $player->user;
-            $user_model = $user_state->model();
+        $game->players->each(function ($player) {
+            $user = $player->user;
 
-            $user_model->rating = $user_state->rating;
-            $user_model->save();
+            $user->rating = $user->state()->rating;
+            $user->save();
         });
     }
 
     public function calculateNewRating(PlayerState $player, GameState $game): int
     {
-        // maybe dynamically set k_factor based on experience later?
         $k_factor = 32;
         $player_rating = $player->user()->rating;
         $opponent_rating = $player->opponent()->user()->rating;

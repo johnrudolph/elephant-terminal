@@ -66,9 +66,19 @@ class GameView extends Component
             ->toArray();
     }
 
+    #[Computed]
+    public function moves()
+    {
+        return $this->game->moves;
+    }
+
     public function mount(Game $game)
     {
         $this->game = $game;
+
+        if ($this->game->status === 'abandoned') {
+            return redirect()->route('dashboard');
+        }
 
         if (! $this->player || ! $this->opponent) {
             return redirect()->route('games.pre-game-lobby.show', $this->game);
@@ -220,6 +230,11 @@ class GameView extends Component
         Verbs::commit();
 
         unset($this->opponent_is_friend);
+    }
+
+    public function check_for_moves()
+    {
+        unset($this->moves);
     }
 
     public function render()
