@@ -34,6 +34,8 @@ class GameView extends Component
 
     public array $valid_slides;
 
+    public string $opponent_is_friend;
+
     #[Computed]
     public function user()
     {
@@ -50,12 +52,6 @@ class GameView extends Component
     public function opponent(): ?Player
     {
         return $this->game->players->firstWhere('user_id', '!=', $this->user->id);
-    }
-
-    #[Computed]
-    public function opponent_is_friend()
-    {
-        return $this->user->friendship_status_with($this->opponent->user);
     }
 
     #[Computed]
@@ -101,6 +97,8 @@ class GameView extends Component
         $this->valid_elephant_moves = $this->game->valid_elephant_moves;
 
         $this->valid_slides = $this->game->valid_slides;
+
+        $this->opponent_is_friend = $this->user->friendship_status_with($this->opponent->user);
     }
 
     public function playTile($direction, $index)
@@ -148,6 +146,7 @@ class GameView extends Component
         return [
             "echo-private:games.{$this->game->id}:PlayerMovedElephantBroadcast" => 'handleElephantMove',
             "echo-private:games.{$this->game->id}:PlayerPlayedTileBroadcast" => 'handleTilePlayed',
+            "echo-private:users.{$this->user->id}:UserAddedFriendBroadcast" => 'handleFriendRequest',
         ];
     }
 
@@ -220,6 +219,15 @@ class GameView extends Component
         $this->is_player_turn = $this->game->current_player_id === (string) $this->player->id && $this->game->status === 'active';
     }
 
+    public function handleFriendRequest($event)
+    {
+        $this->opponent_is_friend = $this->user->fresh()->friendship_status_with($this->opponent->user->fresh());
+
+        $this->dispatch('friend-status-changed', [
+            'status' => $this->opponent_is_friend,
+        ]);
+    }
+
     public function sendFriendRequest()
     {
         UserAddedFriend::fire(
@@ -229,12 +237,7 @@ class GameView extends Component
 
         Verbs::commit();
 
-        unset($this->opponent_is_friend);
-    }
-
-    public function check_for_moves()
-    {
-        unset($this->moves);
+        $this->opponent_is_friend = $this->user->fresh()->friendship_status_with($this->opponent->user->fresh());
     }
 
     public function render()

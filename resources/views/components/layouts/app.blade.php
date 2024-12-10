@@ -12,9 +12,9 @@
         @fluxStyles
         @livewireScripts
     </head>
-    <body class="min-h-screen bg-white dark:bg-deep-purple text-zinc-800 dark:text-zinc-200">
+    <body class="min-h-screen bg-white dark:bg-slate-900 text-zinc-800 dark:text-zinc-200">
         @if (auth()->user())
-        <flux:header container class="bg-zinc-50 border-b border-zinc-200 dark:bg-pink dark:border-zinc-700">
+        <flux:header container class="bg-zinc-50 border-b border-zinc-200 dark:bg-slate-900 dark:border-zinc-700">
             <flux:navbar class="-mb-px">
                 <flux:navbar.item icon="home" href="/dashboard">Home</flux:navbar.item>
                 <flux:navbar.item icon="users" href="/friends">Friends</flux:navbar.item>

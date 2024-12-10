@@ -33,6 +33,18 @@ class HomePage extends Component
     }
 
     #[Computed]
+    public function active_game()
+    {
+        return $this->user->games->where('status', 'active')->last();
+    }
+
+    #[Computed]
+    public function active_opponent()
+    {
+        return $this->active_game->players->firstWhere('user_id', '!=', $this->user->id);
+    }
+
+    #[Computed]
     public function games()
     {
         return Game::where('status', 'created')
@@ -66,7 +78,7 @@ class HomePage extends Component
             is_friends_only: $this->is_friends_only,
         )->game_id;
 
-        $victory_shape = $this->is_bot_game ? collect(['square', 'line', 'el', 'zig'])->random() : collect(['square', 'line'])->random();
+        $victory_shape = collect(['square', 'line'])->random();
 
         PlayerCreated::fire(
             game_id: $game_id,
@@ -97,7 +109,7 @@ class HomePage extends Component
 
     public function join(string $game_id)
     {
-        $victory_shape = collect(['el', 'zig'])->random();
+        $victory_shape = collect(['square', 'line'])->random();
 
         PlayerCreated::fire(
             game_id: (int) $game_id,
