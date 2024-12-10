@@ -14,7 +14,7 @@
         @vite(['resources/css/app.css', 'resources/js/app.js'])
         @fluxStyles
     </head>
-    <body class="antialiased font-sans bg-white dark:bg-zinc-800 text-zinc-800 dark:text-zinc-200">
+    <body class="antialiased font-sans bg-beige dark:bg-deep-purple text-deep-purple dark:text-beige">
         <flux:container class="flex flex-col items-center justify-center">
             <flux:card class="max-w-xs mt-16">
                 <flux:heading size="xl">
@@ -32,9 +32,11 @@
                     @endif
                 </div>
             </flux:card>
-            <x-demo />
-            <footer class="fixed bottom-0 left-0 right-0 py-4 text-center text-sm text-black dark:text-white/70 bg-white dark:bg-zinc-800">
-                Made with ❤️ by <a href="https://catacombian.com"><span class="font-bold text-zinc-900 dark:text-zinc-200">Catacombian Games</span></a>
+            <div class="mt-16">
+                <x-demo />
+            </div>
+            <footer class="fixed bottom-0 left-0 right-0 py-4 text-center text-sm">
+                Made with ❤️ by <a href="https://catacombian.com"><span class="font-bold">Catacombian Games</span></a>
             </footer>
         </flux:container>
         @fluxScripts

@@ -157,7 +157,6 @@
                     }
                 } else {
                     const nextCoords = this.spaceToCoords(nextSpace);
-                    console.log(nextCoords);
                     const updatedTiles = this.tiles.map(tile => {
                         if (tile.id === existingTile.id) {
                             return {
@@ -254,8 +253,9 @@
             }, 700);
         });
     "
-    class="min-h-screen flex items-center justify-center flex-col space-y-8"
+    class="flex items-center justify-center flex-col space-y-8"
 >
+    {{-- player info --}}
     <div class="flex flex-col items-center justify-center space-y-4 w-[300px]">
         <flux:card class="w-full" >
             <div class="flex flex-row justify-between items-center text-zinc-800 dark:text-zinc-200" :class="{ 'animate-pulse': is_player_turn && game_status === 'active' }">
@@ -309,6 +309,7 @@
         </flux:card>
     </div>
 
+    {{-- debug info --}}
     <div class="fixed top-4 right-4 bg-black/50 text-white p-2 rounded space-y-1">
         <div>Phase: <span x-text="phase"></span></div>
         <div>Animating: <span x-text="animating"></span></div>
@@ -366,10 +367,10 @@
                     <button 
                         x-show="elephant_phase && valid_elephant_moves.includes(i) && game_status === 'active' && is_player_turn"
                         @click="moveElephant(i); $wire.moveElephant(i)" 
-                        class="absolute inset-0 bg-slate-200 opacity-20 animate-pulse rounded-lg z-20"
+                        class="absolute inset-0 bg-slate-400 opacity-20 animate-pulse rounded-lg z-20"
                     ></button>
                     <div 
-                        class="absolute inset-0 bg-gray-100 dark:bg-zinc-700 rounded-lg"
+                        class="absolute inset-0 bg-slate-200 dark:bg-zinc-700 rounded-lg"
                         x-show="!elephant_phase || !valid_elephant_moves.includes(i)"
                     ></div>
                 </div>

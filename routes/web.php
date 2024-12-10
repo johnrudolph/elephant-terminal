@@ -20,7 +20,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/games/{game}', GameView::class)->name('games.show');
     Route::get('/games/{game}/pre-game-lobby', PreGameLobby::class)->name('games.pre-game-lobby.show');
     Route::get('/dashboard', HomePage::class)->name('dashboard');
-    Route::get('/friends', FriendsListView::class)->name('friends');
+Route::get('/friends', FriendsListView::class)->name('friends');
 });
 
 require __DIR__.'/auth.php';
