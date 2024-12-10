@@ -1,8 +1,9 @@
 <div>
     <flux:tab.group>
         <flux:tabs class="px-4">
-            <flux:tab name="create">Create</flux:tab>
             <flux:tab name="join">Join</flux:tab>
+            <flux:tab name="create">Create</flux:tab>
+            <flux:tab name="rules">Rules</flux:tab>
         </flux:tabs>
 
         <flux:tab.panel name="create">
@@ -73,6 +74,13 @@
                     </flux:rows>
                 </flux:table>
             @endif
+        </flux:tab.panel>
+        <flux:tab.panel name="rules">
+            <flux:card>
+                <flux:subheading>
+                    Take turns sliding a tile onto the board. Sliding tiles push other tiles into the next space. Tiles pushed off the the board return to your hand. The elephant blocks slides. Move the elephant each time you play a tile. If you are out of tiles, you skip your turn. This usually means you'll lose. The first player to create their victory shape wins.
+                </flux:subheading>
+            </flux:card>
         </flux:tab.panel>
     </flux:tab.group>
 </div>
