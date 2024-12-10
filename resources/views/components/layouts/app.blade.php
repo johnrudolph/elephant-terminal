@@ -12,9 +12,9 @@
         @fluxStyles
         @livewireScripts
     </head>
-    <body class="min-h-screen bg-white dark:bg-zinc-800 text-zinc-800 dark:text-zinc-200">
+    <body class="min-h-screen bg-white dark:bg-deep-purple text-zinc-800 dark:text-zinc-200">
         @if (auth()->user())
-        <flux:header container class="bg-zinc-50 border-b border-zinc-200 dark:bg-zinc-800 dark:border-zinc-700">
+        <flux:header container class="bg-zinc-50 border-b border-zinc-200 dark:bg-pink dark:border-zinc-700">
             <flux:navbar class="-mb-px">
                 <flux:navbar.item icon="home" href="/dashboard">Home</flux:navbar.item>
                 <flux:navbar.item icon="users" href="/friends">Friends</flux:navbar.item>
@@ -41,9 +41,7 @@
             <div class="flex flex-col pb-16">
                 {{ $slot }}
             </div>
-            <footer class="fixed bottom-0 left-0 right-0 py-4 text-center text-sm text-black dark:text-white/70 bg-white dark:bg-zinc-800">
-                Made with ❤️ by <a href="https://catacombian.com"><span class="font-bold text-zinc-900 dark:text-zinc-200">Catacombian Games</span></a>
-            </footer>
+            <x-footer />
         </flux:main>
 
         @fluxScripts

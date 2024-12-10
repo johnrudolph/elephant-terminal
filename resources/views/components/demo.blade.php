@@ -211,7 +211,7 @@
             <!-- Grid spaces -->
             <template x-for="i in 16">
                 <div class="relative">
-                    <div class="absolute w-58 h-58 inset-0 bg-gray-100 dark:bg-zinc-700 rounded-lg"></div>
+                    <div class="absolute w-58 h-58 inset-0 bg-gray-100 dark:opacity-20 dark:bg-zinc-700 rounded-lg"></div>
                 </div>
             </template>
             
@@ -219,7 +219,7 @@
             <template x-for="tile in tiles" :key="tile.id">
                 <div 
                     class="absolute w-[58px] h-[58px] rounded-lg transition-all duration-700 ease-in-out"
-                    :class="tile.playerId === 1 ? 'bg-pink' : 'bg-forest-green'"
+                    :class="tile.playerId === 1 ? 'bg-forest-green' : 'bg-beige'"
                     :style="`
                         transform: translate(${tile.x}px, ${tile.y}px) scale(${tile.scale || 1});
                         opacity: ${tile.opacity === undefined ? 1 : tile.opacity};

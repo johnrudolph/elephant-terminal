@@ -4,7 +4,8 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
 
-        <title>Laravel</title>
+        <title>Elephant in the Room</title>
+        <link rel="icon" href="{{ asset('favicon.ico') }}">
 
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.bunny.net">
@@ -14,9 +15,9 @@
         @vite(['resources/css/app.css', 'resources/js/app.js'])
         @fluxStyles
     </head>
-    <body class="antialiased font-sans bg-beige dark:bg-deep-purple text-deep-purple dark:text-beige">
+    <body class="antialiased font-sans bg-white dark:bg-deep-purple dark:text-white">
         <flux:container class="flex flex-col items-center justify-center">
-            <flux:card class="max-w-xs mt-16">
+            <flux:card class="max-w-xs mt-16 bg-beige">
                 <flux:heading size="xl">
                     Elephant in the Room
                 </flux:heading>
@@ -35,9 +36,7 @@
             <div class="mt-16">
                 <x-demo />
             </div>
-            <footer class="fixed bottom-0 left-0 right-0 py-4 text-center text-sm">
-                Made with ❤️ by <a href="https://catacombian.com"><span class="font-bold">Catacombian Games</span></a>
-            </footer>
+            <x-footer />
         </flux:container>
         @fluxScripts
     </body>

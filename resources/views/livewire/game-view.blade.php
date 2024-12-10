@@ -265,7 +265,7 @@
                         <flux:badge color="gray" size="sm" variant="outline" class="ml-1">{{ $this->player->user->rating }}</flux:badge>
                     </flux:heading>
                     <div class="mt-2 flex flex-row space-x-2 items-center">
-                        <div class="bg-blue-500 w-8 h-8 rounded-lg flex items-center justify-center">
+                        <div class="bg-beige w-8 h-8 rounded-lg flex items-center justify-center">
                             <p class="font-bold text-white" x-text="player_hand"></p>
                         </div>
                         <p class="text-xs">remaining</p>
@@ -295,7 +295,7 @@
                     <flux:badge size="sm" color="green">Friends</flux:badge>
                 @endif
                 <div class="flex flex-row space-x-2 mt-2 items-center">
-                    <div class="bg-red-500 w-8 h-8 rounded-lg flex items-center justify-center">
+                    <div class="bg-forest-green w-8 h-8 rounded-lg flex items-center justify-center">
                         <p class="font-bold text-white" x-text="opponent_hand"></p>
                     </div>
                     <p class="text-xs">remaining</p>
@@ -370,7 +370,7 @@
                         class="absolute inset-0 bg-slate-400 opacity-20 animate-pulse rounded-lg z-20"
                     ></button>
                     <div 
-                        class="absolute inset-0 bg-slate-200 dark:bg-zinc-700 rounded-lg"
+                        class="absolute inset-0 bg-gray-100 dark:opacity-20 dark:bg-zinc-700 rounded-lg"
                         x-show="!elephant_phase || !valid_elephant_moves.includes(i)"
                     ></div>
                 </div>
@@ -380,7 +380,7 @@
             <template x-for="tile in tiles" :key="tile.id">
                 <div 
                     class="absolute w-[58px] h-[58px] rounded-lg transition-all duration-700 ease-in-out"
-                    :class="tile.playerId === {{ $this->player->id }} ? 'bg-blue-500' : 'bg-red-500'"
+                    :class="tile.playerId === {{ $this->player->id }} ? 'bg-beige' : 'bg-forest-green'"
                     :style="`
                         transform: translate(${tile.x}px, ${tile.y}px) scale(${tile.scale || 1});
                         opacity: ${tile.opacity === undefined ? 1 : tile.opacity};
