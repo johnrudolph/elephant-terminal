@@ -1,258 +1,270 @@
-<div 
-    wire:ignore 
-    wire:poll.5000ms="check_for_moves"
-    x-data="{
-        tiles: [],
-        elephant_space: @entangle('elephant_space'),
-        nextId: 1,
-        init: 'true',
-        player_hand: @entangle('player_hand'),
-        opponent_hand: @entangle('opponent_hand'),
-        is_player_turn: @entangle('is_player_turn'),
-        phase: @entangle('phase'),
-        game_status: @entangle('game_status'),
-        valid_elephant_moves: @entangle('valid_elephant_moves'),
-        valid_slides: @entangle('valid_slides'),
-        animating: false,
-        get tile_phase() {
-            return !this.animating && this.is_player_turn && this.phase === 'tile' && this.game_status === 'active';
-        },
-        get elephant_phase() {
-            return !this.animating && this.is_player_turn && this.phase === 'move' && this.game_status === 'active';
-        },
+@script
+<script type="module">
+    window.gameBoard = function() {
+        return {
+            phase: @entangle('phase'),
+            animating: false,
+            is_player_turn: @entangle('is_player_turn'),
+            game_status: @entangle('game_status'),
+            tiles: [],
+            elephant_space: @entangle('elephant_space'),
+            nextId: 1,
+            init: 'true',
+            player_hand: @entangle('player_hand'),
+            opponent_hand: @entangle('opponent_hand'),
+            valid_elephant_moves: @entangle('valid_elephant_moves'),
+            valid_slides: @entangle('valid_slides'),
+            get tile_phase() {
+                return !this.animating && this.is_player_turn && this.phase === 'tile' && this.game_status === 'active';
+            },
+            get elephant_phase() {
+                return !this.animating && this.is_player_turn && this.phase === 'move' && this.game_status === 'active';
+            },
 
-        spaceToCoords(space) {
-            const row = Math.floor((space - 1) / 4);
-            const col = (space - 1) % 4;
-            return {
-                x: col * 60 + col,
-                y: row * 60 + row
-            };
-        },
+            // Methods
+            spaceToCoords(space) {
+                const row = Math.floor((space - 1) / 4);
+                const col = (space - 1) % 4;
+                return {
+                    x: col * 60 + col,
+                    y: row * 60 + row
+                };
+            },
 
-        initializeTilesAndElephant() {
-            @foreach($this->tiles as $space => $playerId)
-                this.tiles.push({
-                    id: this.nextId++,
-                    x: this.spaceToCoords({{ $space }}).x,
-                    y: this.spaceToCoords({{ $space }}).y,
-                    playerId: {{ $playerId }},
-                    space: {{ $space }}
-                });
-            @endforeach
+            initializeTilesAndElephant() {
+                @foreach($this->tiles as $space => $playerId)
+                    this.tiles.push({
+                        id: this.nextId++,
+                        x: this.spaceToCoords({{ $space }}).x,
+                        y: this.spaceToCoords({{ $space }}).y,
+                        playerId: {{ $playerId }},
+                        space: {{ $space }}
+                    });
+                @endforeach
 
-            const elephant_coords = this.spaceToCoords(this.elephant_space);  
-            this.$refs.elephant.style.transform = `translate(${elephant_coords.x}px, ${elephant_coords.y}px)`;
-            
-            setTimeout(() => {
-                this.init = false;
-            }, 100);
-        },
-
-        moveElephant(space) {
-            this.animating = true;
-            this.elephant_space = space;
-            const coords = this.spaceToCoords(space);
-            this.$refs.elephant.style.transform = `translate(${coords.x}px, ${coords.y}px)`;
-            
-            setTimeout(() => {
-                this.phase = 'tile';
-                this.animating = false;
-                if(this.opponent_hand > 0) {
-                    this.is_player_turn = false;
-                }
-            }, 700);
-        },
-
-        playTile(direction, position, player_id) {
-            this.phase = 'move';
-
-            if (player_id === {{ $this->player->id }}) {
-                this.player_hand--;
-            } else {
-                this.opponent_hand--;
-            }
-
-            const startPosition = {
-                from_left:   { x: -60,     y: position * 60 },
-                from_right:  { x: 240,     y: position * 60 },
-                down:    { x: position * 60, y: -60 },
-                up: { x: position * 60, y: 240 }
-            };
-
-            const targetSpace = {
-                from_left:   position * 4 + 1,
-                from_right:  (position * 4) + 4,
-                down:    position + 1,
-                up: position + 13
-            }[direction];
-
-            const shiftTilesFrom = (space, depth = 0) => {
-                const existingTile = this.tiles.find(tile => tile.space === space);
-                if (!existingTile) return;
-
-                const currentRow = Math.floor((space - 1) / 4);
-                const nextSpace = {
-                    from_left: space + 1,
-                    from_right: space - 1,
-                    down: space + 4,
-                    up: space - 4
-                }[direction];
+                const elephant_coords = this.spaceToCoords(this.elephant_space);  
+                this.$refs.elephant.style.transform = `translate(${elephant_coords.x}px, ${elephant_coords.y}px)`;
                 
-                // Check if the current space is valid for this row
-                const isValidForRow = (spaceNum, row) => {
-                    const spaceRow = Math.floor((spaceNum - 1) / 4);
-                    return spaceRow === row;
+                setTimeout(() => {
+                    this.init = false;
+                }, 100);
+            },
+
+            moveElephant(space) {
+                this.animating = true;
+                this.elephant_space = space;
+                const coords = this.spaceToCoords(space);
+                this.$refs.elephant.style.transform = `translate(${coords.x}px, ${coords.y}px)`;
+                
+                setTimeout(() => {
+                    this.phase = 'tile';
+                    this.animating = false;
+                    if(this.opponent_hand > 0) {
+                        this.is_player_turn = false;
+                    }
+                }, 700);
+            },
+
+            playTile(direction, position, player_id) {
+                console.log('playTile', direction, position, player_id);
+                this.phase = 'move';
+
+                if (player_id === {{ $this->player->id }}) {
+                    this.player_hand--;
+                } else {
+                    this.opponent_hand--;
+                }
+
+                const startPosition = {
+                    from_left:   { x: -60,     y: position * 60 },
+                    from_right:  { x: 240,     y: position * 60 },
+                    down:    { x: position * 60, y: -60 },
+                    up: { x: position * 60, y: 240 }
                 };
 
-                // Only proceed if we're in the correct row for horizontal movements
-                if (direction === 'from_left' || direction === 'from_right') {
-                    if (!isValidForRow(space, currentRow)) {
-                        return;
-                    }
-                }
+                const targetSpace = {
+                    from_left:   position * 4 + 1,
+                    from_right:  (position * 4) + 4,
+                    down:    position + 1,
+                    up: position + 13
+                }[direction];
 
-                // Only recurse if the next space is valid
-                if ((direction === 'from_left' || direction === 'from_right') && isValidForRow(nextSpace, currentRow)) {
-                    shiftTilesFrom(nextSpace, depth + 1);
-                } else if (direction === 'up' || direction === 'down') {
-                    shiftTilesFrom(nextSpace, depth + 1);
-                }
+                const shiftTilesFrom = (space, depth = 0) => {
+                    const existingTile = this.tiles.find(tile => tile.space === space);
+                    if (!existingTile) return;
 
-                if (depth === 3) {
-                    const currentX = existingTile.x || 0;
-                    const currentY = existingTile.y || 0;
-
-                    const exitPosition = {
-                        from_left:   { x: 240, y: currentY },
-                        from_right:  { x: -60, y: currentY },
-                        down:    { x: currentX, y: 240 },
-                        up: { x: currentX, y: -60 }
+                    const currentRow = Math.floor((space - 1) / 4);
+                    const nextSpace = {
+                        from_left: space + 1,
+                        from_right: space - 1,
+                        down: space + 4,
+                        up: space - 4
                     }[direction];
+                    
+                    const isValidForRow = (spaceNum, row) => {
+                        const spaceRow = Math.floor((spaceNum - 1) / 4);
+                        return spaceRow === row;
+                    };
 
-                    if (exitPosition) {
+                    if (direction === 'from_left' || direction === 'from_right') {
+                        if (!isValidForRow(space, currentRow)) {
+                            return;
+                        }
+                    }
+
+                    if ((direction === 'from_left' || direction === 'from_right') && isValidForRow(nextSpace, currentRow)) {
+                        shiftTilesFrom(nextSpace, depth + 1);
+                    } else if (direction === 'up' || direction === 'down') {
+                        shiftTilesFrom(nextSpace, depth + 1);
+                    }
+
+                    if (depth === 3) {
+                        const currentX = existingTile.x || 0;
+                        const currentY = existingTile.y || 0;
+
+                        const exitPosition = {
+                            from_left:   { x: 240, y: currentY },
+                            from_right:  { x: -60, y: currentY },
+                            down:    { x: currentX, y: 240 },
+                            up: { x: currentX, y: -60 }
+                        }[direction];
+
+                        if (exitPosition) {
+                            const updatedTiles = this.tiles.map(tile => {
+                                if (tile.id === existingTile.id) {
+                                    return {
+                                        ...tile,
+                                        x: exitPosition.x,
+                                        y: exitPosition.y,
+                                        opacity: 0,
+                                        scale: 0.5
+                                    };
+                                }
+                                return tile;
+                            });
+                            this.tiles = updatedTiles;
+
+                            if(existingTile.playerId === {{ $this->player->id }}) {
+                                this.player_hand++;
+                            } else {
+                                this.opponent_hand++;
+                            }
+
+                            setTimeout(() => {
+                                this.tiles = this.tiles.filter(tile => tile.id !== existingTile.id);
+                            }, 700);
+                        }
+                    } else {
+                        const nextCoords = this.spaceToCoords(nextSpace);
                         const updatedTiles = this.tiles.map(tile => {
                             if (tile.id === existingTile.id) {
                                 return {
                                     ...tile,
-                                    x: exitPosition.x,
-                                    y: exitPosition.y,
-                                    opacity: 0,
-                                    scale: 0.5
+                                    space: nextSpace,
+                                    x: nextCoords.x,
+                                    y: nextCoords.y
                                 };
                             }
                             return tile;
                         });
                         this.tiles = updatedTiles;
-
-                        if(existingTile.playerId === {{ $this->player->id }}) {
-                            this.player_hand++;
-                        } else {
-                            this.opponent_hand++;
-                        }
-
-                        setTimeout(() => {
-                            this.tiles = this.tiles.filter(tile => tile.id !== existingTile.id);
-                        }, 700);
                     }
-                } else {
-                    const nextCoords = this.spaceToCoords(nextSpace);
+                };
+
+                shiftTilesFrom(targetSpace);
+
+                const tile_coords = this.spaceToCoords(targetSpace);
+                const finalPosition = {
+                    x: tile_coords.x,
+                    y: tile_coords.y
+                };
+
+                const newTile = {
+                    id: this.nextId++,
+                    x: startPosition[direction].x,
+                    y: startPosition[direction].y,
+                    playerId: player_id, 
+                    space: targetSpace
+                };
+                this.tiles.push(newTile);
+                
+                setTimeout(() => {
                     const updatedTiles = this.tiles.map(tile => {
-                        if (tile.id === existingTile.id) {
+                        if (tile.id === newTile.id) {
                             return {
-                                ...tile,
-                                space: nextSpace,
-                                x: nextCoords.x,
-                                y: nextCoords.y
+                                id: tile.id,
+                                playerId: tile.playerId,
+                                space: tile.space,
+                                x: finalPosition.x,
+                                y: finalPosition.y
                             };
                         }
                         return tile;
                     });
                     this.tiles = updatedTiles;
-                }
-            };
+                }, 50);
+            },
 
-            // Start the recursive shifting from the target space
-            shiftTilesFrom(targetSpace);
+            init() {
+                console.log('Init called at:', Date.now());
+                this.initializeTilesAndElephant();
 
-            // Now place the new tile
-            const tile_coords = this.spaceToCoords(targetSpace);
-            const finalPosition = {
-                x: tile_coords.x,
-                y: tile_coords.y
-            };
-
-            const newTile = {
-                id: this.nextId++,
-                x: startPosition[direction].x,
-                y: startPosition[direction].y,
-                playerId: player_id, 
-                space: targetSpace
-            };
-            this.tiles.push(newTile);
-            
-            setTimeout(() => {
-                const updatedTiles = this.tiles.map(tile => {
-                    if (tile.id === newTile.id) {
-                        return {
-                            id: tile.id,
-                            playerId: tile.playerId,
-                            space: tile.space,
-                            x: finalPosition.x,
-                            y: finalPosition.y
-                        };
-                    }
-                    return tile;
+                // Set up watchers
+                this.$watch('phase', value => {
+                    this.phase = value;
                 });
-                this.tiles = updatedTiles;
-            }, 50);
+
+                this.$watch('game_status', value => {
+                    this.game_status = value;
+                });
+
+                this.$watch('valid_elephant_moves', value => {
+                    this.valid_elephant_moves = value;
+                });
+
+                this.$watch('valid_slides', value => {
+                    this.valid_slides = value;
+                });
+
+                this.$watch('is_player_turn', value => {
+                    this.is_player_turn = value;
+                });
+
+                this.$watch('player_hand', value => {
+                    this.player_hand = value;
+                });
+
+                this.$watch('opponent_hand', value => {
+                    this.opponent_hand = value;
+                });
+
+                this.$wire.on('opponent-played-tile', (data) => {
+                    console.log('Event received at:', Date.now(), {
+                        data,
+                        componentId: this.$wire.id
+                    });
+                    this.animating = true;
+                    this.playTile(data[0].direction, data[0].position, data[0].player_id);
+                });
+
+                this.$wire.on('opponent-moved-elephant', (data) => {
+                    this.animating = true;
+                    const coords = this.spaceToCoords(data[0].position);
+                    this.$refs.elephant.style.transform = `translate(${coords.x}px, ${coords.y}px)`;
+                    setTimeout(() => {
+                        this.animating = false;
+                    }, 700);
+                });
+            }
         }
-    }" 
-    x-init="
-        initializeTilesAndElephant();
+    }
+</script>
+@endscript
 
-        $watch('phase', function(value) {
-            this.phase = value;
-        });
-
-        $watch('game_status', function(value) {
-            this.game_status = value;
-        });
-
-        $watch('valid_elephant_moves', function(value) {
-            this.valid_elephant_moves = value;
-        });
-
-        $watch('valid_slides', function(value) {
-            this.valid_slides = value;
-        });
-
-        $watch('is_player_turn', function(value) {
-            this.is_player_turn = value;
-        });
-
-        $watch('player_hand', function(value) {
-            this.player_hand = value;
-        });
-
-        $watch('opponent_hand', function(value) {
-            this.opponent_hand = value;
-        });
-
-        Livewire.on('opponent-played-tile', async function(data) {
-            $data.animating = true;
-            playTile(data[0].direction, data[0].position, data[0].player_id);
-        });
-
-        Livewire.on('opponent-moved-elephant', async function(data) {
-            $data.animating = true;
-            const coords = $data.spaceToCoords(data[0].position);
-            $refs.elephant.style.transform = `translate(${coords.x}px, ${coords.y}px)`;
-            setTimeout(() => {
-                $data.animating = false;
-            }, 700);
-        });
-    "
+<div 
+    x-data="gameBoard()"
+    wire:ignore
+    wire:poll.5000ms="check_for_moves"
     class="flex items-center justify-center flex-col space-y-8"
 >
     {{-- player info --}}
@@ -265,7 +277,7 @@
                         <flux:badge color="gray" size="sm" variant="outline" class="ml-1">{{ $this->player->user->rating }}</flux:badge>
                     </flux:heading>
                     <div class="mt-2 flex flex-row space-x-2 items-center">
-                        <div class="bg-beige w-8 h-8 rounded-lg flex items-center justify-center">
+                        <div class="bg-orange dark:bg-dark-orange w-8 h-8 rounded-lg flex items-center justify-center">
                             <p class="font-bold text-white" x-text="player_hand"></p>
                         </div>
                         <p class="text-xs">remaining</p>
@@ -295,7 +307,7 @@
                     <flux:badge size="sm" color="green">Friends</flux:badge>
                 @endif
                 <div class="flex flex-row space-x-2 mt-2 items-center">
-                    <div class="bg-forest-green w-8 h-8 rounded-lg flex items-center justify-center">
+                    <div class="bg-teal dark:bg-dark-teal w-8 h-8 rounded-lg flex items-center justify-center">
                         <p class="font-bold text-white" x-text="opponent_hand"></p>
                     </div>
                     <p class="text-xs">remaining</p>
@@ -380,7 +392,7 @@
             <template x-for="tile in tiles" :key="tile.id">
                 <div 
                     class="absolute w-[58px] h-[58px] rounded-lg transition-all duration-700 ease-in-out"
-                    :class="tile.playerId === {{ $this->player->id }} ? 'bg-beige' : 'bg-forest-green'"
+                    :class="tile.playerId === {{ $this->player->id }} ? 'bg-orange dark:bg-dark-orange' : 'bg-light-teal dark:bg-dark-teal'"
                     :style="`
                         transform: translate(${tile.x}px, ${tile.y}px) scale(${tile.scale || 1});
                         opacity: ${tile.opacity === undefined ? 1 : tile.opacity};
@@ -394,7 +406,7 @@
                 class="absolute w-[58px] h-[58px]"
                 :class="{ 'transition-all duration-700 ease-in-out': !init }"
             >
-                <x-svg.elephant class="w-11 h-11 mx-auto mt-2 z-90"/>
+                <x-svg.elephant class="w-11 h-11 dark:text-white text-gray-900 mx-auto mt-2 z-90"/>
             </div>
         </div>
 
