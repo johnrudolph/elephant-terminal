@@ -181,7 +181,7 @@ trait BoardLogic
             ->toArray();
     }
 
-    public function isVictorious(PlayerState $player, array $board)
+    public function winningSpaces(PlayerState $player, array $board): array
     {
         $possible_victory_sets = match ($player->victory_shape) {
             'square' => $this::SQUARE_VICTORIES,
@@ -200,7 +200,12 @@ trait BoardLogic
                     }, 0)
             )
             ->filter(fn($set) => $set === 4)
-            ->count() > 0;
+            ->toArray();
+    }
+
+    public function isVictorious(PlayerState $player, array $board)
+    {
+        return count($this->winningSpaces($player, $board)) > 0;
     }
 
     const SQUARE_VICTORIES = [

@@ -19,6 +19,7 @@ return new class extends Migration
             $table->string('phase')->enum('elephant', 'tile');
             $table->foreignIdFor(Player::class, 'current_player_id')->nullable();
             $table->json('victors')->nullable();
+            $table->json('winning_spaces')->nullable();
             $table->boolean('is_ranked')->default(false);
             $table->boolean('is_friends_only')->default(false);
             $table->timestamps();

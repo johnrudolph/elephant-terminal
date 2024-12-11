@@ -40,6 +40,8 @@ class GameEnded extends Event
             $user->rating = $user->state()->rating;
             $user->save();
         });
+
+        GameEndedBroadcast::dispatch($game);
     }
 
     public function calculateNewRating(PlayerState $player, GameState $game): int

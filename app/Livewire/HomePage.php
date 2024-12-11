@@ -119,6 +119,8 @@ class HomePage extends Component
             victory_shape: $victory_shape,
         );
 
+        GameStarted::fire(game_id: (int) $game_id);
+
         Verbs::commit();
 
         return redirect()->route('games.show', (int) $game_id);

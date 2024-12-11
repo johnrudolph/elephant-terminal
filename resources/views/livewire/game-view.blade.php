@@ -8,10 +8,14 @@
             elephant_space: {{ $this->elephant_space }},
             player_hand: {{ $this->player_hand }},
             opponent_hand: {{ $this->opponent_hand }},
-            opponent_is_friend: '{{ $this->opponent_is_friend }}'
+            opponent_is_friend: '{{ $this->opponent_is_friend }}',
+            victors: '{{ $this->victors }}',
+            winning_spaces: '{{ $this->winning_spaces }}'
         };
 
         return {
+            victors: @entangle('victors'),
+            winning_spaces: @entangle('winning_spaces'),
             is_player_turn: defaults.is_player_turn,
             phase: @entangle('phase'),
             animating: false,
@@ -203,6 +207,17 @@
                     space: targetSpace
                 };
                 this.tiles.push(newTile);
+
+                const player_victory_status = checkForVictory(this.tiles, '{{ $this->player->victory_shape }}', {{ (string) $this->player->id }});
+                const opponent_victory_status = checkForVictory(this.tiles, '{{ $this->opponent->victory_shape }}', {{ (string) $this->opponent->id }});
+
+                if (player_victory_status.has_won) {
+                    this.game_status = 'ended';
+                    this.game_winner = {{ (string) $this->player->id }};
+                } else if (opponent_victory_status.has_won) {
+                    this.game_status = 'ended';
+                    this.game_winner = {{ (string) $this->opponent->id }};
+                }
                 
                 setTimeout(() => {
                     const updatedTiles = this.tiles.map(tile => {
@@ -259,9 +274,11 @@
                 });
 
                 this.$wire.on('friend-status-changed', (data) => {
-                    console.log(data);
                     this.opponent_is_friend = data[0].status;
-                    console.log(this.opponent_is_friend);
+                });
+
+                this.$wire.on('game-ended', (data) => {
+                    this.game_status = data[0].status;
                 });
             }
         }
@@ -343,7 +360,7 @@
                 <template x-for="i in 4">
                     <div>
                         <button 
-                            @click="playTile('down', i-1, {{ $this->player->id }}); $wire.playTile('down', i)"
+                            @click="playTile('down', i-1, {{ (string) $this->player->id }}); $wire.playTile('down', i)"
                             class="w-[58px] h-8 animate-pulse flex items-center justify-center"
                             x-show="Object.values(valid_slides).some(slide => slide['space'] === i && slide['direction'] === 'down')"
                         >
@@ -363,7 +380,7 @@
                 <template x-for="i in 4" >
                     <div>
                         <button 
-                            @click="playTile('from_left', i-1, {{ $this->player->id }}); $wire.playTile('right', i)"
+                            @click="playTile('from_left', i-1, {{ (string) $this->player->id }}); $wire.playTile('right', i)"
                             class="h-[58px] w-8 animate-pulse flex items-center justify-center"
                             x-show="Object.values(valid_slides).some(slide => slide['space'] === 1 + (i - 1) * 4 && slide['direction'] === 'right')"
                         >
@@ -384,7 +401,7 @@
                 <div class="relative">
                     <button 
                         x-show="elephant_phase && valid_elephant_moves.includes(i) && game_status === 'active' && is_player_turn"
-                        @click="moveElephant({{ $this->player->id }}, i); $wire.moveElephant(i)" 
+                        @click="moveElephant({{ (string) $this->player->id }}, i); $wire.moveElephant(i)" 
                         class="absolute inset-0 bg-slate-400 opacity-20 animate-pulse rounded-lg z-20"
                     ></button>
                     <div 
@@ -398,7 +415,7 @@
             <template x-for="tile in tiles" :key="tile.id">
                 <div 
                     class="absolute w-[58px] h-[58px] rounded-lg transition-all duration-700 ease-in-out"
-                    :class="tile.playerId === {{ $this->player->id }} ? 'bg-orange dark:bg-dark-orange' : 'bg-light-teal dark:bg-dark-teal'"
+                    :class="tile.playerId === {{ (string) $this->player->id }} ? 'bg-orange dark:bg-dark-orange' : 'bg-light-teal dark:bg-dark-teal'"
                     :style="`
                         transform: translate(${tile.x}px, ${tile.y}px) scale(${tile.scale || 1});
                         opacity: ${tile.opacity === undefined ? 1 : tile.opacity};
@@ -422,7 +439,7 @@
                 <template x-for="i in 4">
                     <div>
                         <button 
-                            @click="playTile('from_right', i-1, {{ $this->player->id }}); $wire.playTile('left', i)"
+                            @click="playTile('from_right', i-1, {{ (string) $this->player->id }}); $wire.playTile('left', i)"
                             class="h-[58px] w-8 animate-pulse rounded-lg flex items-center justify-center"
                             x-show="Object.values(valid_slides).some(slide => slide['space'] === i * 4 && slide['direction'] === 'left')"
                         >
@@ -442,7 +459,7 @@
                 <template x-for="i in 4">
                     <div>
                         <button 
-                            @click="playTile('up', i-1, {{ $this->player->id }}); $wire.playTile('up', i)"
+                            @click="playTile('up', i-1, {{ (string) $this->player->id }}); $wire.playTile('up', i)"
                             class="w-[58px] h-8 animate-pulse flex items-center justify-center"
                             x-show="Object.values(valid_slides).some(slide => slide['space'] === i +12 && slide['direction'] === 'up')"
                         >
