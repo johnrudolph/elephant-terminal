@@ -414,7 +414,7 @@
                     :class="{
                         'bg-orange dark:bg-dark-orange': tile.playerId === {{ (string) $this->player->id }},
                         'bg-light-teal dark:bg-dark-teal': tile.playerId !== {{ (string) $this->player->id }},
-                        'victory-tile': winning_spaces.includes(tile.space)
+                        'victory-wave-glow': winning_spaces.includes(tile.space)
                     }"
                     :style="`
                         --x: ${tile.x}px;
