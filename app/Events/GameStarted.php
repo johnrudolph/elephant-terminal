@@ -21,7 +21,7 @@ class GameStarted extends Event
 
         $state->phase = GameState::PHASE_PLACE_TILE;
 
-        $state->victors = [];
+        $state->victor_ids = [];
     }
 
     public function fired()

@@ -31,11 +31,13 @@ class GameCreated extends Event
 
         $state->is_ranked = $this->is_ranked;
 
-        $state->victors = [];
+        $state->victor_ids = [];
 
         $state->moves = [];
 
         $state->phase = $state::PHASE_PLACE_TILE;
+
+        $state->winning_spaces = [];
     }
 
     public function handle()
@@ -50,15 +52,11 @@ class GameCreated extends Event
             'valid_slides' => $game->validSlides(),
             'elephant_space' => $game->elephant_space,
             'phase' => $game->phase,
-            'victors' => $game->victors,
+            'victor_ids' => $game->victor_ids,
+            'winning_spaces' => $game->winning_spaces,
             'is_ranked' => $this->is_ranked,
             'is_friends_only' => $this->is_friends_only,
         ]);
-
-//         dd(
-// User::find($this->user_id)->games(),
-// Game::all()
-//         );
 
         User::find($this->user_id)->games
             ->filter(fn($g) => $g->status === 'created' && $g->id !== $this->game_id)

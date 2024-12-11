@@ -6,7 +6,7 @@ beforeEach(function () {
     Verbs::commitImmediately();
 });
 
-it('can move a tile and the elephant', function () {
+it('can handle square victories', function () {
     $this->bootMultiplayerGame();
 
     expect($this->player_1->state()->victory_shape)->toBe('square');
@@ -30,10 +30,56 @@ it('can move a tile and the elephant', function () {
         16 => null,
     ];
 
-    expect(
-        collect($this->game->state()->victor($fake_board))
-            ->contains((string) $this->player_1->id)
-        )->toBeTrue();
+    $this->assertContains(
+        (string) $this->player_1->id,
+        $this->game->state()->victors($fake_board)
+    );
+});
+
+it('can handle a cats game', function() {
+    $this->bootMultiplayerGame();
+
+    // get to this state
+    // 2 1 1 - 
+    // 2 2 1 1
+
+    $this->player_1->playTile(2, 'down');
+    $this->player_1->moveElephant(10);
+    $this->player_2->playTile(1, 'down');
+    $this->player_2->moveElephant(10);
+    $this->player_1->playTile(3, 'down');
+    $this->player_1->moveElephant(10);
+    $this->player_2->playTile(5, 'right');
+    $this->player_2->moveElephant(10);
+    $this->player_1->playTile(8, 'left');
+    $this->player_1->moveElephant(10);
+    $this->player_2->playTile(5, 'right');
+    $this->player_2->moveElephant(10);
+    $this->player_1->playTile(8, 'left');
+    $this->player_1->moveElephant(10);
+
+    // player 2's final slide wins it for both players to create: 
+    // 2 2 1 1 
+    // 2 2 1 1
+
+    $this->player_2->playTile(1, 'right');
+
+    expect($this->game->fresh()->status)->toBe('complete');
+
+    $this->assertContains(
+        (string) $this->player_1->id,
+        $this->game->fresh()->victor_ids
+    );
+
+    $this->assertContains(
+        (string) $this->player_2->id,
+        $this->game->fresh()->victor_ids
+    );
+
+    $this->assertEquals(
+        [3, 4, 7, 8, 1, 2, 5, 6],
+        $this->game->fresh()->winning_spaces
+    );
 });
 
 it('can handle line victories', function() {
@@ -60,10 +106,10 @@ it('can handle line victories', function() {
         16 => null,
     ];
 
-    expect(
-        collect($this->game->state()->victor($fake_board))
-            ->contains((string) $this->player_1->id)
-        )->toBeTrue();
+    $this->assertContains(
+        (string) $this->player_1->id,
+        $this->game->state()->victors($fake_board)
+    );
 });
 
 it('can handle pyramid victories', function() {
@@ -92,10 +138,10 @@ it('can handle pyramid victories', function() {
 
     // this works in the abstract:
 
-    expect(
-        collect($this->game->state()->victor($fake_board))
-            ->contains((string) $this->player_1->id)
-        )->toBeTrue();
+    $this->assertContains(
+        (string) $this->player_1->id,
+        $this->game->state()->victors($fake_board)
+    );
 
     // but let's test it for real:
     // @todo this works here, but not IRL.
@@ -135,8 +181,8 @@ it('can handle pyramid victories', function() {
         16 => (string) $this->player_1->id,
     ];
 
-    expect(
-        collect($this->game->state()->victor($fake_board))
-            ->contains((string) $this->player_1->id)
-        )->toBeTrue();
+    $this->assertContains(
+        (string) $this->player_1->id,
+        $this->game->state()->victors($fake_board)
+    );
 });

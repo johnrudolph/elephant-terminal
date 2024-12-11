@@ -63,6 +63,7 @@ class HomePage extends Component
                     'id' => (string) $game->id,
                     'player' => $game->players->first()->user->name,
                     'is_friend' => $game->players->first()->user->friendship_status_with($this->user) === 'friends',
+                    'is_ranked' => $game->is_ranked,
                     'rating' => $game->players->first()->user->rating,
                 ];
             });

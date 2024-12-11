@@ -121,9 +121,9 @@ class PlayerPlayedTile extends Event
             ->map(fn ($player) => $player->hand)
             ->sum() === 0;
 
-        if (count($state->victor($state->board)) > 0 || $both_player_hands_are_empty) {
+        if (count($state->victors($state->board)) > 0 || $both_player_hands_are_empty) {
             $state->status = 'complete';
-            $state->victors = $state->victor($state->board);
+            $state->victor_ids = $state->victors($state->board);
         }
     }
 
@@ -147,7 +147,7 @@ class PlayerPlayedTile extends Event
             'valid_slides' => $game->validSlides(),
             'phase' => $game->phase,
             'current_player_id' => $game->current_player_id,
-            'victors' => $game->victors,
+            'victor_ids' => $game->victor_ids,
         ]);
 
         Player::find($game->current_player_id)->update([

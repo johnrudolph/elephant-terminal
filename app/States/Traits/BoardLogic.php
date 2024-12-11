@@ -173,7 +173,7 @@ trait BoardLogic
         return $valid_elephant_moves;
     }
 
-    public function victor(array $board): array
+    public function victors(array $board): array
     {
         return $this->players()
             ->filter(fn($player) => $this->isVictorious($player, $board))
@@ -193,13 +193,12 @@ trait BoardLogic
         };
 
         return collect($possible_victory_sets)
-            ->map(fn($set) => 
+            ->filter(fn($set) => 
                 collect($set)
                     ->reduce(function (int $spaces_in_set_occupied_by_player, int $space) use($board, $player) {
                         return $spaces_in_set_occupied_by_player + ($board[$space] === (string) $player->id ? 1 : 0);
-                    }, 0)
+                    }, 0) === 4
             )
-            ->filter(fn($set) => $set === 4)
             ->toArray();
     }
 

@@ -18,7 +18,8 @@ class Game extends Model
         'board' => 'array',
         'valid_slides' => 'array',
         'valid_elephant_moves' => 'array',
-        'victors' => 'array',
+        'victor_ids' => 'array',
+        'winning_spaces' => 'array',
     ];
 
     public function state()

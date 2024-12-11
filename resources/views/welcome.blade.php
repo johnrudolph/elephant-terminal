@@ -21,7 +21,7 @@
                 <flux:heading size="xl">
                     Elephant in the Room
                 </flux:heading>
-                <flux:subheading class="text-center">
+                <flux:subheading class="text-center max-w-xs">
                     Your mission: build a simple shape. The catch? Your opponent can push your tiles around, and there's an elephant in the room.
                 </flux:subheading>
             </div>

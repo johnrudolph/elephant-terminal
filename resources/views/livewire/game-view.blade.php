@@ -9,13 +9,13 @@
             player_hand: {{ $this->player_hand }},
             opponent_hand: {{ $this->opponent_hand }},
             opponent_is_friend: '{{ $this->opponent_is_friend }}',
-            victors: '{{ $this->victors }}',
-            winning_spaces: '{{ $this->winning_spaces }}'
+            victor_ids: @json($this->victor_ids),
+            winning_spaces: @json($this->winning_spaces)
         };
 
         return {
-            victors: @entangle('victors'),
-            winning_spaces: @entangle('winning_spaces'),
+            victor_ids: defaults.victor_ids,
+            winning_spaces: defaults.winning_spaces,
             is_player_turn: defaults.is_player_turn,
             phase: @entangle('phase'),
             animating: false,
@@ -299,12 +299,11 @@
                     <flux:heading class="text-left w-full">
                         {{ $this->player->user->name }}
                     </flux:heading>
-                    <flux:badge color="gray" size="sm" variant="outline" icon="star">{{ $this->player->user->rating }}</flux:badge>
-                    <div class="mt-2 flex flex-row space-x-2 items-center">
-                        <div class="bg-orange dark:bg-dark-orange w-8 h-8 rounded-lg flex items-center justify-center">
+                    <div class="flex flex-row space-x-2 items-center">
+                        <div class="bg-orange dark:bg-dark-orange w-6 h-6 rounded-lg flex items-center justify-center">
                             <p class="font-bold text-white" x-text="player_hand"></p>
                         </div>
-                        <p class="text-xs">remaining</p>
+                        <flux:badge color="gray" size="sm" variant="outline" icon="star">{{ $this->player->user->rating }}</flux:badge>
                     </div>
                 </div>
                 <x-dynamic-component 
@@ -321,27 +320,24 @@
                     {{ $this->opponent->user->name }}
                 </flux:heading>
                 <div class="flex flex-row space-x-2 items-center">
+                    <div class="bg-light-teal dark:bg-dark-teal w-6 h-6 rounded-lg flex items-center justify-center">
+                        <p class="font-bold text-white" x-text="opponent_hand"></p>
+                    </div>
                     <flux:badge color="gray" size="sm" variant="outline" icon="star">{{ $this->opponent->user->rating }}</flux:badge>
                     @unless($this->opponent->user->email === 'bot@bot.bot')
                         <template x-if="opponent_is_friend === 'request_incoming'">
-                            <flux:badge as="button" variant="ghost" inset size="sm" wire:click="sendFriendRequest" icon="user-plus">Confirm friend</flux:badge>
+                            <flux:badge as="button" variant="ghost" inset size="sm" wire:click="sendFriendRequest" icon="user-plus">Confirm</flux:badge>
                         </template>
                         <template x-if="opponent_is_friend === 'request_outgoing'">
                             <flux:badge size="sm" color="gray" icon="user">Request sent</flux:badge>
                         </template>
                         <template x-if="opponent_is_friend === 'not_friends'">
-                            <flux:badge as="button" variant="ghost" inset size="sm" wire:click="sendFriendRequest" icon="user-plus">Add friend</flux:badge>
+                            <flux:badge as="button" variant="ghost" inset size="sm" wire:click="sendFriendRequest" icon="user-plus">Add</flux:badge>
                         </template>
                         <template x-if="opponent_is_friend === 'friends'">
                             <flux:badge size="sm" color="green" icon="user">Friends</flux:badge>
                         </template>
                     @endunless
-                </div>
-                <div class="flex flex-row space-x-2 mt-2 items-center">
-                    <div class="bg-light-teal dark:bg-dark-teal w-8 h-8 rounded-lg flex items-center justify-center">
-                        <p class="font-bold text-white" x-text="opponent_hand"></p>
-                    </div>
-                    <p class="text-xs">remaining</p>
                 </div>
             </div>
             <x-dynamic-component 
@@ -415,9 +411,15 @@
             <template x-for="tile in tiles" :key="tile.id">
                 <div 
                     class="absolute w-[58px] h-[58px] rounded-lg transition-all duration-700 ease-in-out"
-                    :class="tile.playerId === {{ (string) $this->player->id }} ? 'bg-orange dark:bg-dark-orange' : 'bg-light-teal dark:bg-dark-teal'"
+                    :class="{
+                        'bg-orange dark:bg-dark-orange': tile.playerId === {{ (string) $this->player->id }},
+                        'bg-light-teal dark:bg-dark-teal': tile.playerId !== {{ (string) $this->player->id }},
+                        'victory-tile': winning_spaces.includes(tile.space)
+                    }"
                     :style="`
-                        transform: translate(${tile.x}px, ${tile.y}px) scale(${tile.scale || 1});
+                        --x: ${tile.x}px;
+                        --y: ${tile.y}px;
+                        transform: translate(${tile.x}px, ${tile.y}px);
                         opacity: ${tile.opacity === undefined ? 1 : tile.opacity};
                     `"
                 ></div>

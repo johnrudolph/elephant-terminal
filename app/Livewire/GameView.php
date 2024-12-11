@@ -36,9 +36,9 @@ class GameView extends Component
 
     public string $opponent_is_friend;
 
-    public array $victors;
+    public ?array $victor_ids;
 
-    public array $winning_spaces;
+    public ?array $winning_spaces;
 
     #[Computed]
     public function user()
@@ -104,7 +104,7 @@ class GameView extends Component
 
         $this->opponent_is_friend = $this->user->friendship_status_with($this->opponent->user);
 
-        $this->victors = $this->game->victors;
+        $this->victor_ids = $this->game->victor_ids;
 
         $this->winning_spaces = $this->game->winning_spaces;
     }

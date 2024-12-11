@@ -1,3 +1,16 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@keyframes victory-bounce {
+    0%, 100% {
+        transform: translate(var(--x), var(--y));
+    }
+    50% {
+        transform: translate(var(--x), calc(var(--y) - 10px));
+    }
+}
+
+.victory-tile {
+    animation: victory-bounce 1s ease-in-out infinite;
+}

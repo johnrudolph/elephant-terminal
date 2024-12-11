@@ -17,7 +17,13 @@ class GameEnded extends Event
     {
         $state->status = 'complete';
 
-        $state->victors = $state->victor($state->board);
+        $state->victor_ids = $state->victors($state->board);
+
+        $state->winning_spaces = collect($state->victor_ids)
+            ->map(fn($v_id) => $this->state(GameState::class)->winningSpaces(PlayerState::load($v_id), $state->board))
+            ->values()
+            ->flatten()
+            ->toArray();
 
         if ($state->is_ranked) {
             $state->players()->each(fn($p) => $p->user()->rating = $this->calculateNewRating($p, $state));
@@ -30,7 +36,9 @@ class GameEnded extends Event
 
         $game->status = 'complete';
 
-        $game->victors = $this->state(GameState::class)->victors;
+        $game->victor_ids = $this->state(GameState::class)->victor_ids;
+
+        $game->winning_spaces = $this->state(GameState::class)->winning_spaces;
 
         $game->save();
 
@@ -53,8 +61,8 @@ class GameEnded extends Event
         $expected_score = 1 / (1 + (10 ** (($opponent_rating - $player_rating) / 400)));
 
         $actual_score = match(true) {
-            count($game->victors) === 1 && in_array($player->id, $game->victors) => 1.0,
-            count($game->victors) === 1 => 0.0,
+            count($game->victor_ids) === 1 && in_array($player->id, $game->victor_ids) => 1.0,
+            count($game->victor_ids) === 1 => 0.0,
             default => 0.5 // draw
         };
 
