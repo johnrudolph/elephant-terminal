@@ -14,7 +14,7 @@
     "
     wire:disconnected="$wire.handleDisconnect()"
 
-    wire:poll.10000ms="checkIfAbandoned"
+    wire:poll.10000ms="checkIfCanceled"
 >
     @if($this->game->players->count() === 1 && $this->player)
         <flux:card class="w-full">

@@ -2,7 +2,7 @@
 
 namespace App\Jobs;
 
-use App\Events\GameAbandoned;
+use App\Events\GameCanceled;
 use Illuminate\Bus\Queueable;
 use Illuminate\Support\Collection;
 use Illuminate\Queue\SerializesModels;
@@ -10,7 +10,7 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 
-class ProcessStaleGames implements ShouldQueue
+class CancelGamesJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
@@ -24,7 +24,7 @@ class ProcessStaleGames implements ShouldQueue
     public function handle()
     {
         foreach ($this->stale_games as $game) {
-            GameAbandoned::fire(game_id: $game->id);
+            GameCanceled::fire(game_id: $game->id);
         }
     }
 }

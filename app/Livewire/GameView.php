@@ -40,6 +40,10 @@ class GameView extends Component
 
     public ?array $winning_spaces;
 
+    public bool $player_is_victor;
+
+    public bool $opponent_is_victor;
+
     #[Computed]
     public function user()
     {
@@ -76,7 +80,7 @@ class GameView extends Component
     {
         $this->game = $game;
 
-        if ($this->game->status === 'abandoned') {
+        if ($this->game->status === 'canceled') {
             return redirect()->route('dashboard');
         }
 
@@ -107,6 +111,16 @@ class GameView extends Component
         $this->victor_ids = $this->game->victor_ids;
 
         $this->winning_spaces = $this->game->winning_spaces;
+
+        $this->player_is_victor = in_array(
+            (string) $this->player->id, 
+            $this->game->victor_ids
+        );
+
+        $this->opponent_is_victor = in_array(
+            (string) $this->opponent->id, 
+            $this->game->victor_ids
+        );
     }
 
     public function playTile($direction, $index)
@@ -227,12 +241,26 @@ class GameView extends Component
         $this->game_status = $this->game->status;
 
         $this->is_player_turn = $this->game->current_player_id === (string) $this->player->id && $this->game->status === 'active';
+
+        $this->player_is_victor = in_array(
+            (string) $this->player->id, 
+            $this->game->victor_ids
+        );
+
+        $this->opponent_is_victor = in_array(
+            (string) $this->opponent->id, 
+            $this->game->victor_ids
+        );
     }
 
     public function handleGameEnded($event)
     {
         $this->dispatch('game-ended', [
             'status' => $this->game->status,
+            'victor_ids' => $this->game->victor_ids,
+            'winning_spaces' => $this->game->winning_spaces,
+            'player_is_victor' => in_array((string) $this->player->id, $this->game->victor_ids),
+            'opponent_is_victor' => in_array((string) $this->opponent->id, $this->game->victor_ids),
         ]);
     }
 

@@ -10,11 +10,15 @@
             opponent_hand: {{ $this->opponent_hand }},
             opponent_is_friend: '{{ $this->opponent_is_friend }}',
             victor_ids: @json($this->victor_ids),
-            winning_spaces: @json($this->winning_spaces)
+            winning_spaces: @json($this->winning_spaces),
+            player_is_victor: {{ $this->player_is_victor ? 'true' : 'false' }},
+            opponent_is_victor: {{ $this->opponent_is_victor ? 'true' : 'false' }},
         };
 
         return {
             victor_ids: defaults.victor_ids,
+            player_is_victor: defaults.player_is_victor,
+            opponent_is_victor: defaults.opponent_is_victor,
             winning_spaces: defaults.winning_spaces,
             is_player_turn: defaults.is_player_turn,
             phase: @entangle('phase'),
@@ -278,7 +282,21 @@
                 });
 
                 this.$wire.on('game-ended', (data) => {
-                    this.game_status = data[0].status;
+                    if (!this.animating) {
+                        this.game_status = data[0].status;
+                        this.victor_ids = data[0].victor_ids;
+                        this.winning_spaces = data[0].winning_spaces;
+                        this.player_is_victor = data[0].player_is_victor;
+                        this.opponent_is_victor = data[0].opponent_is_victor;
+                    } else {
+                        setTimeout(() => {
+                            this.game_status = data[0].status;
+                            this.victor_ids = data[0].victor_ids;
+                            this.winning_spaces = data[0].winning_spaces;
+                            this.player_is_victor = data[0].player_is_victor;
+                            this.opponent_is_victor = data[0].opponent_is_victor;
+                        }, 700);
+                    }
                 });
             }
         }
@@ -293,59 +311,63 @@
 >
     {{-- player info --}}
     <div class="flex flex-col items-center justify-center space-y-4 w-[300px]">
-        <flux:card class="w-full" >
-            <div class="flex flex-row justify-between items-center text-zinc-800 dark:text-zinc-200" :class="{ 'animate-pulse': is_player_turn && game_status === 'active' }">
+        <div class="w-full" :class="{ 'victory-wave-glow': player_is_victor }">
+            <flux:card class="w-full">
+                <div class="flex flex-row justify-between items-center text-zinc-800 dark:text-zinc-200" :class="{ 'animate-pulse': is_player_turn && game_status === 'active' }">
+                    <div class="flex flex-col items-start w-full space-y-2">
+                        <flux:heading class="text-left w-full">
+                            {{ $this->player->user->name }}
+                        </flux:heading>
+                        <div class="flex flex-row space-x-2 items-center">
+                            <div class="bg-orange dark:bg-dark-orange w-6 h-6 rounded-lg flex items-center justify-center">
+                                <p class="font-bold text-white" x-text="player_hand"></p>
+                            </div>
+                            <flux:badge color="gray" size="sm" variant="outline" icon="star">{{ $this->player->user->rating }}</flux:badge>
+                        </div>
+                    </div>
+                    <x-dynamic-component 
+                        :component="'svg.' . $this->player->victory_shape"
+                        class="w-14 h-14"
+                    />
+                </div>
+            </flux:card>
+        </div>
+
+        <div class="w-full" :class="{ 'victory-wave-glow': opponent_is_victor }">
+            <flux:card class="w-full">
+                <div class="flex flex-row justify-between items-center text-zinc-800 dark:text-zinc-200" :class="{ 'animate-pulse': !is_player_turn && game_status === 'active' }">
                 <div class="flex flex-col items-start w-full space-y-2">
                     <flux:heading class="text-left w-full">
-                        {{ $this->player->user->name }}
+                        {{ $this->opponent->user->name }}
                     </flux:heading>
                     <div class="flex flex-row space-x-2 items-center">
-                        <div class="bg-orange dark:bg-dark-orange w-6 h-6 rounded-lg flex items-center justify-center">
-                            <p class="font-bold text-white" x-text="player_hand"></p>
+                        <div class="bg-light-teal dark:bg-dark-teal w-6 h-6 rounded-lg flex items-center justify-center">
+                            <p class="font-bold text-white" x-text="opponent_hand"></p>
                         </div>
-                        <flux:badge color="gray" size="sm" variant="outline" icon="star">{{ $this->player->user->rating }}</flux:badge>
+                        <flux:badge color="gray" size="sm" variant="outline" icon="star">{{ $this->opponent->user->rating }}</flux:badge>
+                        @unless($this->opponent->user->email === 'bot@bot.bot')
+                            <template x-if="opponent_is_friend === 'request_incoming'">
+                                <flux:badge as="button" variant="ghost" inset size="sm" wire:click="sendFriendRequest" icon="user-plus">Confirm</flux:badge>
+                            </template>
+                            <template x-if="opponent_is_friend === 'request_outgoing'">
+                                <flux:badge size="sm" color="gray" icon="user">Request sent</flux:badge>
+                            </template>
+                            <template x-if="opponent_is_friend === 'not_friends'">
+                                <flux:badge as="button" variant="ghost" inset size="sm" wire:click="sendFriendRequest" icon="user-plus">Add</flux:badge>
+                            </template>
+                            <template x-if="opponent_is_friend === 'friends'">
+                                <flux:badge size="sm" color="green" icon="user">Friends</flux:badge>
+                            </template>
+                        @endunless
                     </div>
                 </div>
                 <x-dynamic-component 
-                    :component="'svg.' . $this->player->victory_shape"
+                    :component="'svg.' . $this->opponent->victory_shape"
                     class="w-14 h-14"
                 />
-            </div>
-        </flux:card>
-
-        <flux:card class="w-full" >
-            <div class="flex flex-row justify-between items-center text-zinc-800 dark:text-zinc-200" :class="{ 'animate-pulse': !is_player_turn && game_status === 'active' }">
-            <div class="flex flex-col items-start w-full space-y-2">
-                <flux:heading class="text-left w-full">
-                    {{ $this->opponent->user->name }}
-                </flux:heading>
-                <div class="flex flex-row space-x-2 items-center">
-                    <div class="bg-light-teal dark:bg-dark-teal w-6 h-6 rounded-lg flex items-center justify-center">
-                        <p class="font-bold text-white" x-text="opponent_hand"></p>
-                    </div>
-                    <flux:badge color="gray" size="sm" variant="outline" icon="star">{{ $this->opponent->user->rating }}</flux:badge>
-                    @unless($this->opponent->user->email === 'bot@bot.bot')
-                        <template x-if="opponent_is_friend === 'request_incoming'">
-                            <flux:badge as="button" variant="ghost" inset size="sm" wire:click="sendFriendRequest" icon="user-plus">Confirm</flux:badge>
-                        </template>
-                        <template x-if="opponent_is_friend === 'request_outgoing'">
-                            <flux:badge size="sm" color="gray" icon="user">Request sent</flux:badge>
-                        </template>
-                        <template x-if="opponent_is_friend === 'not_friends'">
-                            <flux:badge as="button" variant="ghost" inset size="sm" wire:click="sendFriendRequest" icon="user-plus">Add</flux:badge>
-                        </template>
-                        <template x-if="opponent_is_friend === 'friends'">
-                            <flux:badge size="sm" color="green" icon="user">Friends</flux:badge>
-                        </template>
-                    @endunless
                 </div>
-            </div>
-            <x-dynamic-component 
-                :component="'svg.' . $this->opponent->victory_shape"
-                class="w-14 h-14"
-            />
-            </div>
-        </flux:card>
+            </flux:card>
+        </div>
     </div>
 
     {{-- Gameboard --}}

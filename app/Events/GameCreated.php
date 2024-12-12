@@ -61,7 +61,7 @@ class GameCreated extends Event
         User::find($this->user_id)->games
             ->filter(fn($g) => $g->status === 'created' && $g->id !== $this->game_id)
             ->each(function ($game) {
-                $game->status = 'abandoned';
+                $game->status = 'canceled';
                 $game->save();
             });
     }

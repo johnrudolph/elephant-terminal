@@ -6,7 +6,6 @@ use App\Models\Game;
 use App\Models\Player;
 use Livewire\Component;
 use App\Events\GameStarted;
-use App\Events\GameAbandoned;
 use App\Events\PlayerCreated;
 use Livewire\Attributes\Computed;
 use Illuminate\Support\Facades\Auth;
@@ -38,19 +37,19 @@ class PreGameLobby extends Component
         return [
             "echo-private:games.{$this->game->id}:PlayerCreatedBroadcast" => 'handlePlayerCreated',
             "echo-private:games.{$this->game->id}:GameStartedBroadcast" => 'handleGameStarted',
-            "echo-private:games.{$this->game->id}:GameAbandonedBroadcast" => 'handleGameAbandoned',
+            "echo-private:games.{$this->game->id}:GameCanceledBroadcast" => 'handleGameCanceled',
         ];
     }
 
     public function mount(Game $game)
     {
         $this->game = $game;
-        $this->checkIfAbandoned();
+        $this->checkIfCanceled();
     }
 
-    public function checkIfAbandoned()
+    public function checkIfCanceled()
     {
-        if ($this->game->status === 'abandoned') {
+        if ($this->game->status === 'canceled') {
             return redirect()->route('dashboard');
         }
     }
@@ -78,13 +77,6 @@ class PreGameLobby extends Component
         GameStarted::fire(game_id: $this->game->id);
 
         return redirect()->route('games.show', $this->game->id);
-    }
-
-    public function leave()
-    {
-        GameAbandoned::fire(game_id: $this->game->id);
-
-        return redirect()->route('dashboard');
     }
 
     public function render()

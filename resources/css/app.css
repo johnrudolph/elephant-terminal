@@ -2,94 +2,22 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Pulse */
-@keyframes victory-pulse {
-    0%, 100% {
-        transform: translate(var(--x), var(--y)) scale(1);
-    }
-    50% {
-        transform: translate(var(--x), var(--y)) scale(1.1);
-    }
-}
-
-/* Shake */
-@keyframes victory-shake {
-    0%, 100% {
-        transform: translate(var(--x), var(--y));
-    }
-    25% {
-        transform: translate(calc(var(--x) - 5px), var(--y));
-    }
-    75% {
-        transform: translate(calc(var(--x) + 5px), var(--y));
-    }
-}
-
-/* Rotate */
-@keyframes victory-spin {
-    0% {
-        transform: translate(var(--x), var(--y)) rotate(0deg);
-    }
-    100% {
-        transform: translate(var(--x), var(--y)) rotate(360deg);
-    }
-}
-
-/* Glow */
-@keyframes victory-glow {
-    0%, 100% {
-        transform: translate(var(--x), var(--y));
-        box-shadow: 0 0 5px #fff, 0 0 10px #fff, 0 0 15px #ff8c00;
-    }
-    50% {
-        transform: translate(var(--x), var(--y));
-        box-shadow: 0 0 10px #fff, 0 0 20px #fff, 0 0 30px #ff8c00;
-    }
-}
-
-/* Bounce with Rotation */
-@keyframes victory-bounce-spin {
-    0%, 100% {
-        transform: translate(var(--x), var(--y)) rotate(0deg);
-    }
-    50% {
-        transform: translate(var(--x), calc(var(--y) - 10px)) rotate(180deg);
-    }
-}
-
-/* Wave */
-@keyframes victory-wave {
-    0%, 100% {
-        transform: translate(var(--x), var(--y));
-    }
-    25% {
-        transform: translate(var(--x), calc(var(--y) - 5px)) rotate(5deg);
-    }
-    75% {
-        transform: translate(var(--x), calc(var(--y) - 5px)) rotate(-5deg);
-    }
-}
-
-/* Wave Glow */
 @keyframes victory-wave-glow {
     0%, 100% {
         transform: translate(var(--x), var(--y));
         box-shadow: 0 0 5px #fff, 0 0 10px #fff, 0 0 15px #ff8c00;
+        border-radius: 0.75rem;
     }
     25% {
         transform: translate(var(--x), calc(var(--y) - 5px)) rotate(5deg);
         box-shadow: 0 0 10px #fff, 0 0 20px #fff, 0 0 30px #ff8c00;
+        border-radius: 0.75rem;
     }
     75% {
         transform: translate(var(--x), calc(var(--y) - 5px)) rotate(-5deg);
         box-shadow: 0 0 10px #fff, 0 0 20px #fff, 0 0 30px #ff8c00;
+        border-radius: 0.75rem;
     }
 }
 
-.victory-pulse { animation: victory-pulse 1s ease-in-out infinite; }
-.victory-shake { animation: victory-shake 0.5s ease-in-out infinite; }
-.victory-spin { animation: victory-spin 2s linear infinite; }
-.victory-glow { animation: victory-glow 1.5s ease-in-out infinite; }
-.victory-bounce-spin { animation: victory-bounce-spin 1s ease-in-out infinite; }
-.victory-wave { animation: victory-wave 1s ease-in-out infinite; }
-.victory-wave-glow { animation: victory-wave-glow 1.5s ease-in-out infinite; }
+.victory-wave-glow { animation: victory-wave-glow 1.5s ease-in-out infinite; border-radius: 0.75rem; }
