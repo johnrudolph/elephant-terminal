@@ -82,11 +82,11 @@ trait BotLogic
             $score -= 200;
         }
 
-        if(collect($this->victor($hypothetical_board))->contains($this->player_1_id)) {
+        if(collect($this->victors($hypothetical_board))->contains($this->player_1_id)) {
             $score -= 1000;
         }
 
-        if(collect($this->victor($hypothetical_board))->contains($this->player_2_id)) {
+        if(collect($this->victors($hypothetical_board))->contains($this->player_2_id)) {
             $score += 1000000000;
         }
 

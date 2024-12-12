@@ -32,7 +32,9 @@ class GameState extends State
 
     public array $moves;
 
-    public array $victors;
+    public array $victor_ids;
+
+    public array $winning_spaces;
 
     const PHASE_PLACE_TILE = 'tile';
 

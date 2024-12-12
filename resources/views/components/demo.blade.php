@@ -219,7 +219,7 @@
             <template x-for="tile in tiles" :key="tile.id">
                 <div 
                     class="absolute w-[58px] h-[58px] rounded-lg transition-all duration-700 ease-in-out"
-                    :class="tile.playerId === 1 ? 'bg-forest-green' : 'bg-beige'"
+                    :class="tile.playerId === 1 ? 'bg-orange dark:bg-dark-orange' : 'bg-light-teal dark:bg-dark-teal'"
                     :style="`
                         transform: translate(${tile.x}px, ${tile.y}px) scale(${tile.scale || 1});
                         opacity: ${tile.opacity === undefined ? 1 : tile.opacity};

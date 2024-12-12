@@ -4,6 +4,7 @@ namespace App\Events;
 
 use App\Models\Game;
 use App\Models\Move;
+use App\Models\User;
 use Illuminate\Broadcasting\Channel;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Broadcasting\PrivateChannel;
@@ -12,14 +13,14 @@ use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 
-class GameForfeitedBroadcast implements ShouldBroadcast
+class UserAddedFriendBroadcast implements ShouldBroadcast
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
     /**
      * Create a new event instance.
      */
-    public function __construct(public readonly Game $game)
+    public function __construct(public readonly User $user, public readonly User $friend)
     {
         //
     }
@@ -32,7 +33,8 @@ class GameForfeitedBroadcast implements ShouldBroadcast
     public function broadcastOn(): array
     {
         return [
-            new PrivateChannel('games.'.$this->game->id),
+            new PrivateChannel('users.'.$this->user->id),
+            new PrivateChannel('users.'.$this->friend->id),
         ];
     }
 }

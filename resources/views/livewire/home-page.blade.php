@@ -1,10 +1,46 @@
 <div>
     <flux:tab.group>
         <flux:tabs class="px-4">
-            <flux:tab name="join">Join</flux:tab>
+            @if($this->active_game)
+                <flux:tab name="active_game">Active game</flux:tab>
+            @endif
+            @if($this->games->count() > 0)
+                <flux:tab name="join">Join</flux:tab>
+            @endif
             <flux:tab name="create">Create</flux:tab>
             <flux:tab name="rules">Rules</flux:tab>
         </flux:tabs>
+
+        @if($this->active_game)
+            <flux:tab.panel name="active_game">
+                <flux:table>
+                    <flux:columns>
+                        <flux:column></flux:column>
+                        <flux:column></flux:column>
+                    </flux:columns>
+
+                    <flux:rows>
+                        <flux:row>
+                            <flux:cell>
+                                <div class="flex items-center gap-2">
+                                    {{ $this->active_opponent->user->name }}
+                                    <flux:badge color="gray" size="sm" variant="outline">{{ $this->active_opponent->user->rating }}</flux:badge>
+                                    @if ($this->active_opponent->user->is_friend)
+                                        <flux:badge size="sm" color="green">Friend</flux:badge>
+                                    @endif
+                                    @if ($this->active_game->is_ranked)
+                                        <flux:badge size="sm" color="fuchsia">Ranked</flux:badge>
+                                    @endif
+                                </div>
+                            </flux:cell>
+                            <flux:cell class="flex justify-end">
+                                <flux:button href="{{ route('games.show', $this->active_game->id) }}" variant="primary" size="xs">Rejoin</flux:button>
+                            </flux:cell>
+                        </flux:row>
+                    </flux:rows>
+                </flux:table>
+            </flux:tab.panel>
+        @endif
 
         <flux:tab.panel name="create">
             <flux:fieldset>
@@ -61,7 +97,10 @@
                                             {{ $game['player'] }}
                                             <flux:badge color="gray" size="sm" variant="outline">{{ $game['rating'] }}</flux:badge>
                                             @if ($game['is_friend'])
-                                                <flux:badge size="xs" color="green">Friend</flux:badge>
+                                                <flux:badge size="sm" color="green">Friend</flux:badge>
+                                            @endif
+                                            @if ($game['is_ranked'])
+                                                <flux:badge size="sm" color="fuchsia">Ranked</flux:badge>
                                             @endif
                                         </div>
                                     </flux:cell>
@@ -75,6 +114,7 @@
                 </flux:table>
             @endif
         </flux:tab.panel>
+
         <flux:tab.panel name="rules">
             <flux:card>
                 <flux:subheading>
@@ -82,5 +122,6 @@
                 </flux:subheading>
             </flux:card>
         </flux:tab.panel>
+
     </flux:tab.group>
 </div>

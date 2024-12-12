@@ -5,7 +5,7 @@ namespace App\Events;
 use App\Models\Game;
 use Thunk\Verbs\Event;
 use App\States\GameState;
-use App\Events\GameAbandonedBroadcast;
+use App\Events\GameEndedBroadcast;
 use Thunk\Verbs\Attributes\Autodiscovery\StateId;
 
 class GameForfeited extends Event
@@ -21,16 +21,16 @@ class GameForfeited extends Event
     {
         $state->status = 'completed';
 
-        $state->victors = [$this->winner_id];
+        $state->victor_ids = [$this->winner_id];
     }
 
     public function handle()
     {
         $game = Game::find($this->game_id);
         $game->status = 'completed';
-        $game->victors = [$this->winner_id];
+        $game->victor_ids = [$this->winner_id];
         $game->save();
 
-        GameForfeitedBroadcast::dispatch($game);
+        GameEndedBroadcast::dispatch($game);
     }
 }

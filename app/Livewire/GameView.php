@@ -34,6 +34,16 @@ class GameView extends Component
 
     public array $valid_slides;
 
+    public string $opponent_is_friend;
+
+    public ?array $victor_ids;
+
+    public ?array $winning_spaces;
+
+    public bool $player_is_victor;
+
+    public bool $opponent_is_victor;
+
     #[Computed]
     public function user()
     {
@@ -50,12 +60,6 @@ class GameView extends Component
     public function opponent(): ?Player
     {
         return $this->game->players->firstWhere('user_id', '!=', $this->user->id);
-    }
-
-    #[Computed]
-    public function opponent_is_friend()
-    {
-        return $this->user->friendship_status_with($this->opponent->user);
     }
 
     #[Computed]
@@ -76,7 +80,7 @@ class GameView extends Component
     {
         $this->game = $game;
 
-        if ($this->game->status === 'abandoned') {
+        if ($this->game->status === 'canceled') {
             return redirect()->route('dashboard');
         }
 
@@ -101,6 +105,22 @@ class GameView extends Component
         $this->valid_elephant_moves = $this->game->valid_elephant_moves;
 
         $this->valid_slides = $this->game->valid_slides;
+
+        $this->opponent_is_friend = $this->user->friendship_status_with($this->opponent->user);
+
+        $this->victor_ids = $this->game->victor_ids;
+
+        $this->winning_spaces = $this->game->winning_spaces;
+
+        $this->player_is_victor = in_array(
+            (string) $this->player->id, 
+            $this->game->victor_ids
+        );
+
+        $this->opponent_is_victor = in_array(
+            (string) $this->opponent->id, 
+            $this->game->victor_ids
+        );
     }
 
     public function playTile($direction, $index)
@@ -148,6 +168,9 @@ class GameView extends Component
         return [
             "echo-private:games.{$this->game->id}:PlayerMovedElephantBroadcast" => 'handleElephantMove',
             "echo-private:games.{$this->game->id}:PlayerPlayedTileBroadcast" => 'handleTilePlayed',
+            "echo-private:users.{$this->user->id}:UserAddedFriendBroadcast" => 'handleFriendRequest',
+            "echo-private:games.{$this->game->id}:GameEndedBroadcast" => 'handleGameEnded',
+            "echo-private:games.{$this->game->id}:GameForfeitedBroadcast" => 'handleGameForfeited',
         ];
     }
 
@@ -218,6 +241,36 @@ class GameView extends Component
         $this->game_status = $this->game->status;
 
         $this->is_player_turn = $this->game->current_player_id === (string) $this->player->id && $this->game->status === 'active';
+
+        $this->player_is_victor = in_array(
+            (string) $this->player->id, 
+            $this->game->victor_ids
+        );
+
+        $this->opponent_is_victor = in_array(
+            (string) $this->opponent->id, 
+            $this->game->victor_ids
+        );
+    }
+
+    public function handleGameEnded($event)
+    {
+        $this->dispatch('game-ended', [
+            'status' => $this->game->status,
+            'victor_ids' => $this->game->victor_ids,
+            'winning_spaces' => $this->game->winning_spaces,
+            'player_is_victor' => in_array((string) $this->player->id, $this->game->victor_ids),
+            'opponent_is_victor' => in_array((string) $this->opponent->id, $this->game->victor_ids),
+        ]);
+    }
+
+    public function handleFriendRequest($event)
+    {
+        $this->opponent_is_friend = $this->user->fresh()->friendship_status_with($this->opponent->user->fresh());
+
+        $this->dispatch('friend-status-changed', [
+            'status' => $this->opponent_is_friend,
+        ]);
     }
 
     public function sendFriendRequest()
@@ -229,12 +282,7 @@ class GameView extends Component
 
         Verbs::commit();
 
-        unset($this->opponent_is_friend);
-    }
-
-    public function check_for_moves()
-    {
-        unset($this->moves);
+        $this->opponent_is_friend = $this->user->fresh()->friendship_status_with($this->opponent->user->fresh());
     }
 
     public function render()

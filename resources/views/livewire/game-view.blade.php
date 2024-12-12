@@ -1,320 +1,373 @@
-<div 
-    wire:ignore 
-    wire:poll.5000ms="check_for_moves"
-    x-data="{
-        tiles: [],
-        elephant_space: @entangle('elephant_space'),
-        nextId: 1,
-        init: 'true',
-        player_hand: @entangle('player_hand'),
-        opponent_hand: @entangle('opponent_hand'),
-        is_player_turn: @entangle('is_player_turn'),
-        phase: @entangle('phase'),
-        game_status: @entangle('game_status'),
-        valid_elephant_moves: @entangle('valid_elephant_moves'),
-        valid_slides: @entangle('valid_slides'),
-        animating: false,
-        get tile_phase() {
-            return !this.animating && this.is_player_turn && this.phase === 'tile' && this.game_status === 'active';
-        },
-        get elephant_phase() {
-            return !this.animating && this.is_player_turn && this.phase === 'move' && this.game_status === 'active';
-        },
+@script
+<script type="module">
+    window.gameBoard = function() {
+        const defaults = {
+            is_player_turn: {{ $this->is_player_turn ? 'true' : 'false' }},
+            game_status: '{{ $this->game_status }}',
+            phase: '{{ $this->phase }}',
+            elephant_space: {{ $this->elephant_space }},
+            player_hand: {{ $this->player_hand }},
+            opponent_hand: {{ $this->opponent_hand }},
+            opponent_is_friend: '{{ $this->opponent_is_friend }}',
+            victor_ids: @json($this->victor_ids),
+            winning_spaces: @json($this->winning_spaces),
+            player_is_victor: {{ $this->player_is_victor ? 'true' : 'false' }},
+            opponent_is_victor: {{ $this->opponent_is_victor ? 'true' : 'false' }},
+        };
 
-        spaceToCoords(space) {
-            const row = Math.floor((space - 1) / 4);
-            const col = (space - 1) % 4;
-            return {
-                x: col * 60 + col,
-                y: row * 60 + row
-            };
-        },
+        return {
+            victor_ids: defaults.victor_ids,
+            player_is_victor: defaults.player_is_victor,
+            opponent_is_victor: defaults.opponent_is_victor,
+            winning_spaces: defaults.winning_spaces,
+            is_player_turn: defaults.is_player_turn,
+            phase: @entangle('phase'),
+            animating: false,
+            game_status: @entangle('game_status'),
+            tiles: [],
+            elephant_space: @entangle('elephant_space'),
+            nextId: 1,
+            init: 'true',
+            player_hand: @entangle('player_hand'),
+            opponent_hand: @entangle('opponent_hand'),
+            valid_elephant_moves: @entangle('valid_elephant_moves'),
+            valid_slides: @entangle('valid_slides'),
+            opponent_is_friend: defaults.opponent_is_friend,
+            get tile_phase() {
+                return !this.animating && this.is_player_turn && this.phase === 'tile' && this.game_status === 'active';
+            },
+            get elephant_phase() {
+                return !this.animating && this.is_player_turn && this.phase === 'move' && this.game_status === 'active';
+            },
 
-        initializeTilesAndElephant() {
-            @foreach($this->tiles as $space => $playerId)
-                this.tiles.push({
-                    id: this.nextId++,
-                    x: this.spaceToCoords({{ $space }}).x,
-                    y: this.spaceToCoords({{ $space }}).y,
-                    playerId: {{ $playerId }},
-                    space: {{ $space }}
-                });
-            @endforeach
+            // Methods
+            spaceToCoords(space) {
+                const row = Math.floor((space - 1) / 4);
+                const col = (space - 1) % 4;
+                return {
+                    x: col * 60 + col,
+                    y: row * 60 + row
+                };
+            },
 
-            const elephant_coords = this.spaceToCoords(this.elephant_space);  
-            this.$refs.elephant.style.transform = `translate(${elephant_coords.x}px, ${elephant_coords.y}px)`;
-            
-            setTimeout(() => {
-                this.init = false;
-            }, 100);
-        },
+            initializeTilesAndElephant() {
+                @foreach($this->tiles as $space => $playerId)
+                    this.tiles.push({
+                        id: this.nextId++,
+                        x: this.spaceToCoords({{ $space }}).x,
+                        y: this.spaceToCoords({{ $space }}).y,
+                        playerId: {{ $playerId }},
+                        space: {{ $space }}
+                    });
+                @endforeach
 
-        moveElephant(space) {
-            this.animating = true;
-            this.elephant_space = space;
-            const coords = this.spaceToCoords(space);
-            this.$refs.elephant.style.transform = `translate(${coords.x}px, ${coords.y}px)`;
-            
-            setTimeout(() => {
-                this.phase = 'tile';
-                this.animating = false;
-                if(this.opponent_hand > 0) {
-                    this.is_player_turn = false;
-                }
-            }, 700);
-        },
-
-        playTile(direction, position, player_id) {
-            this.phase = 'move';
-
-            if (player_id === {{ $this->player->id }}) {
-                this.player_hand--;
-            } else {
-                this.opponent_hand--;
-            }
-
-            const startPosition = {
-                from_left:   { x: -60,     y: position * 60 },
-                from_right:  { x: 240,     y: position * 60 },
-                down:    { x: position * 60, y: -60 },
-                up: { x: position * 60, y: 240 }
-            };
-
-            const targetSpace = {
-                from_left:   position * 4 + 1,
-                from_right:  (position * 4) + 4,
-                down:    position + 1,
-                up: position + 13
-            }[direction];
-
-            const shiftTilesFrom = (space, depth = 0) => {
-                const existingTile = this.tiles.find(tile => tile.space === space);
-                if (!existingTile) return;
-
-                const currentRow = Math.floor((space - 1) / 4);
-                const nextSpace = {
-                    from_left: space + 1,
-                    from_right: space - 1,
-                    down: space + 4,
-                    up: space - 4
-                }[direction];
+                const elephant_coords = this.spaceToCoords(this.elephant_space);  
+                this.$refs.elephant.style.transform = `translate(${elephant_coords.x}px, ${elephant_coords.y}px)`;
                 
-                // Check if the current space is valid for this row
-                const isValidForRow = (spaceNum, row) => {
-                    const spaceRow = Math.floor((spaceNum - 1) / 4);
-                    return spaceRow === row;
+                setTimeout(() => {
+                    this.init = false;
+                }, 100);
+            },
+
+            moveElephant(player_id, space) {
+                this.animating = true;
+                this.elephant_space = space;
+                const coords = this.spaceToCoords(space);
+                this.$refs.elephant.style.transform = `translate(${coords.x}px, ${coords.y}px)`;
+                
+                setTimeout(() => {
+                    this.phase = 'tile';
+
+                    if (this.is_player_turn && this.opponent_hand > 0) {
+                        this.is_player_turn = false;
+                    } 
+                    
+                    else if (!this.is_player_turn && this.player_hand > 0) {
+                        this.is_player_turn = true;
+                    }
+                    this.animating = false;
+                }, 700);
+            },
+
+            playTile(direction, position, player_id) {
+                this.animating = true;
+                this.phase = 'move';
+
+                if (player_id === {{ $this->player->id }}) {
+                    this.player_hand--;
+                } else {
+                    this.opponent_hand--;
+                }
+
+                const startPosition = {
+                    from_left:   { x: -60,     y: position * 60 },
+                    from_right:  { x: 240,     y: position * 60 },
+                    down:    { x: position * 60, y: -60 },
+                    up: { x: position * 60, y: 240 }
                 };
 
-                // Only proceed if we're in the correct row for horizontal movements
-                if (direction === 'from_left' || direction === 'from_right') {
-                    if (!isValidForRow(space, currentRow)) {
-                        return;
-                    }
-                }
+                const targetSpace = {
+                    from_left:   position * 4 + 1,
+                    from_right:  (position * 4) + 4,
+                    down:    position + 1,
+                    up: position + 13
+                }[direction];
 
-                // Only recurse if the next space is valid
-                if ((direction === 'from_left' || direction === 'from_right') && isValidForRow(nextSpace, currentRow)) {
-                    shiftTilesFrom(nextSpace, depth + 1);
-                } else if (direction === 'up' || direction === 'down') {
-                    shiftTilesFrom(nextSpace, depth + 1);
-                }
+                const shiftTilesFrom = (space, depth = 0) => {
+                    const existingTile = this.tiles.find(tile => tile.space === space);
+                    if (!existingTile) return;
 
-                if (depth === 3) {
-                    const currentX = existingTile.x || 0;
-                    const currentY = existingTile.y || 0;
-
-                    const exitPosition = {
-                        from_left:   { x: 240, y: currentY },
-                        from_right:  { x: -60, y: currentY },
-                        down:    { x: currentX, y: 240 },
-                        up: { x: currentX, y: -60 }
+                    const currentRow = Math.floor((space - 1) / 4);
+                    const nextSpace = {
+                        from_left: space + 1,
+                        from_right: space - 1,
+                        down: space + 4,
+                        up: space - 4
                     }[direction];
+                    
+                    const isValidForRow = (spaceNum, row) => {
+                        const spaceRow = Math.floor((spaceNum - 1) / 4);
+                        return spaceRow === row;
+                    };
 
-                    if (exitPosition) {
+                    if (direction === 'from_left' || direction === 'from_right') {
+                        if (!isValidForRow(space, currentRow)) {
+                            return;
+                        }
+                    }
+
+                    if ((direction === 'from_left' || direction === 'from_right') && isValidForRow(nextSpace, currentRow)) {
+                        shiftTilesFrom(nextSpace, depth + 1);
+                    } else if (direction === 'up' || direction === 'down') {
+                        shiftTilesFrom(nextSpace, depth + 1);
+                    }
+
+                    if (depth === 3) {
+                        const currentX = existingTile.x || 0;
+                        const currentY = existingTile.y || 0;
+
+                        const exitPosition = {
+                            from_left:   { x: 240, y: currentY },
+                            from_right:  { x: -60, y: currentY },
+                            down:    { x: currentX, y: 240 },
+                            up: { x: currentX, y: -60 }
+                        }[direction];
+
+                        if (exitPosition) {
+                            const updatedTiles = this.tiles.map(tile => {
+                                if (tile.id === existingTile.id) {
+                                    return {
+                                        ...tile,
+                                        x: exitPosition.x,
+                                        y: exitPosition.y,
+                                        opacity: 0,
+                                        scale: 0.5
+                                    };
+                                }
+                                return tile;
+                            });
+                            this.tiles = updatedTiles;
+
+                            if(existingTile.playerId === {{ $this->player->id }}) {
+                                this.player_hand++;
+                            } else {
+                                this.opponent_hand++;
+                            }
+
+                            setTimeout(() => {
+                                this.tiles = this.tiles.filter(tile => tile.id !== existingTile.id);
+                            }, 700);
+                        }
+                    } else {
+                        const nextCoords = this.spaceToCoords(nextSpace);
                         const updatedTiles = this.tiles.map(tile => {
                             if (tile.id === existingTile.id) {
                                 return {
                                     ...tile,
-                                    x: exitPosition.x,
-                                    y: exitPosition.y,
-                                    opacity: 0,
-                                    scale: 0.5
+                                    space: nextSpace,
+                                    x: nextCoords.x,
+                                    y: nextCoords.y
                                 };
                             }
                             return tile;
                         });
                         this.tiles = updatedTiles;
-
-                        if(existingTile.playerId === {{ $this->player->id }}) {
-                            this.player_hand++;
-                        } else {
-                            this.opponent_hand++;
-                        }
-
-                        setTimeout(() => {
-                            this.tiles = this.tiles.filter(tile => tile.id !== existingTile.id);
-                        }, 700);
                     }
-                } else {
-                    const nextCoords = this.spaceToCoords(nextSpace);
+                };
+
+                shiftTilesFrom(targetSpace);
+
+                const tile_coords = this.spaceToCoords(targetSpace);
+                const finalPosition = {
+                    x: tile_coords.x,
+                    y: tile_coords.y
+                };
+
+                const newTile = {
+                    id: this.nextId++,
+                    x: startPosition[direction].x,
+                    y: startPosition[direction].y,
+                    playerId: player_id, 
+                    space: targetSpace
+                };
+                this.tiles.push(newTile);
+
+                const player_victory_status = checkForVictory(this.tiles, '{{ $this->player->victory_shape }}', {{ (string) $this->player->id }});
+                const opponent_victory_status = checkForVictory(this.tiles, '{{ $this->opponent->victory_shape }}', {{ (string) $this->opponent->id }});
+
+                if (player_victory_status.has_won) {
+                    this.game_status = 'ended';
+                    this.game_winner = {{ (string) $this->player->id }};
+                } else if (opponent_victory_status.has_won) {
+                    this.game_status = 'ended';
+                    this.game_winner = {{ (string) $this->opponent->id }};
+                }
+                
+                setTimeout(() => {
                     const updatedTiles = this.tiles.map(tile => {
-                        if (tile.id === existingTile.id) {
+                        if (tile.id === newTile.id) {
                             return {
-                                ...tile,
-                                space: nextSpace,
-                                x: nextCoords.x,
-                                y: nextCoords.y
+                                id: tile.id,
+                                playerId: tile.playerId,
+                                space: tile.space,
+                                x: finalPosition.x,
+                                y: finalPosition.y
                             };
                         }
                         return tile;
                     });
                     this.tiles = updatedTiles;
-                }
-            };
+                    this.animating = false;
+                }, 50);
+            },
 
-            // Start the recursive shifting from the target space
-            shiftTilesFrom(targetSpace);
+            init() {
+                this.initializeTilesAndElephant();
 
-            // Now place the new tile
-            const tile_coords = this.spaceToCoords(targetSpace);
-            const finalPosition = {
-                x: tile_coords.x,
-                y: tile_coords.y
-            };
-
-            const newTile = {
-                id: this.nextId++,
-                x: startPosition[direction].x,
-                y: startPosition[direction].y,
-                playerId: player_id, 
-                space: targetSpace
-            };
-            this.tiles.push(newTile);
-            
-            setTimeout(() => {
-                const updatedTiles = this.tiles.map(tile => {
-                    if (tile.id === newTile.id) {
-                        return {
-                            id: tile.id,
-                            playerId: tile.playerId,
-                            space: tile.space,
-                            x: finalPosition.x,
-                            y: finalPosition.y
-                        };
-                    }
-                    return tile;
+                // Set up watchers
+                this.$watch('phase', value => {
+                    this.phase = value;
                 });
-                this.tiles = updatedTiles;
-            }, 50);
+
+                this.$watch('game_status', value => {
+                    this.game_status = value;
+                });
+
+                this.$watch('valid_elephant_moves', value => {
+                    this.valid_elephant_moves = value;
+                });
+
+                this.$watch('valid_slides', value => {
+                    this.valid_slides = value;
+                });
+
+                this.$watch('player_hand', value => {
+                    this.player_hand = value;
+                });
+
+                this.$watch('opponent_hand', value => {
+                    this.opponent_hand = value;
+                });
+
+                this.$wire.on('opponent-played-tile', (data) => {
+                    this.playTile(data[0].direction, data[0].position, data[0].player_id);
+                });
+
+                this.$wire.on('opponent-moved-elephant', (data) => {
+                    this.moveElephant(data[0].player_id, data[0].position);
+                });
+
+                this.$wire.on('friend-status-changed', (data) => {
+                    this.opponent_is_friend = data[0].status;
+                });
+
+                this.$wire.on('game-ended', (data) => {
+                    if (!this.animating) {
+                        this.game_status = data[0].status;
+                        this.victor_ids = data[0].victor_ids;
+                        this.winning_spaces = data[0].winning_spaces;
+                        this.player_is_victor = data[0].player_is_victor;
+                        this.opponent_is_victor = data[0].opponent_is_victor;
+                    } else {
+                        setTimeout(() => {
+                            this.game_status = data[0].status;
+                            this.victor_ids = data[0].victor_ids;
+                            this.winning_spaces = data[0].winning_spaces;
+                            this.player_is_victor = data[0].player_is_victor;
+                            this.opponent_is_victor = data[0].opponent_is_victor;
+                        }, 700);
+                    }
+                });
+            }
         }
-    }" 
-    x-init="
-        initializeTilesAndElephant();
+    }
+</script>
+@endscript
 
-        $watch('phase', function(value) {
-            this.phase = value;
-        });
-
-        $watch('game_status', function(value) {
-            this.game_status = value;
-        });
-
-        $watch('valid_elephant_moves', function(value) {
-            this.valid_elephant_moves = value;
-        });
-
-        $watch('valid_slides', function(value) {
-            this.valid_slides = value;
-        });
-
-        $watch('is_player_turn', function(value) {
-            this.is_player_turn = value;
-        });
-
-        $watch('player_hand', function(value) {
-            this.player_hand = value;
-        });
-
-        $watch('opponent_hand', function(value) {
-            this.opponent_hand = value;
-        });
-
-        Livewire.on('opponent-played-tile', async function(data) {
-            $data.animating = true;
-            playTile(data[0].direction, data[0].position, data[0].player_id);
-        });
-
-        Livewire.on('opponent-moved-elephant', async function(data) {
-            $data.animating = true;
-            const coords = $data.spaceToCoords(data[0].position);
-            $refs.elephant.style.transform = `translate(${coords.x}px, ${coords.y}px)`;
-            setTimeout(() => {
-                $data.animating = false;
-            }, 700);
-        });
-    "
+<div 
+    x-data="gameBoard()"
+    wire:ignore
     class="flex items-center justify-center flex-col space-y-8"
 >
     {{-- player info --}}
     <div class="flex flex-col items-center justify-center space-y-4 w-[300px]">
-        <flux:card class="w-full" >
-            <div class="flex flex-row justify-between items-center text-zinc-800 dark:text-zinc-200" :class="{ 'animate-pulse': is_player_turn && game_status === 'active' }">
-                <div class="flex flex-col items-start w-full">
-                    <flux:heading class="text-left w-full">
-                        {{ $this->player->user->name }}
-                        <flux:badge color="gray" size="sm" variant="outline" class="ml-1">{{ $this->player->user->rating }}</flux:badge>
-                    </flux:heading>
-                    <div class="mt-2 flex flex-row space-x-2 items-center">
-                        <div class="bg-beige w-8 h-8 rounded-lg flex items-center justify-center">
-                            <p class="font-bold text-white" x-text="player_hand"></p>
+        <div class="w-full" :class="{ 'victory-wave-glow': player_is_victor }">
+            <flux:card class="w-full">
+                <div class="flex flex-row justify-between items-center text-zinc-800 dark:text-zinc-200" :class="{ 'animate-pulse': is_player_turn && game_status === 'active' }">
+                    <div class="flex flex-col items-start w-full space-y-2">
+                        <flux:heading class="text-left w-full">
+                            {{ $this->player->user->name }}
+                        </flux:heading>
+                        <div class="flex flex-row space-x-2 items-center">
+                            <div class="bg-orange dark:bg-dark-orange w-6 h-6 rounded-lg flex items-center justify-center">
+                                <p class="font-bold text-white" x-text="player_hand"></p>
+                            </div>
+                            <flux:badge color="gray" size="sm" variant="outline" icon="star">{{ $this->player->user->rating }}</flux:badge>
                         </div>
-                        <p class="text-xs">remaining</p>
+                    </div>
+                    <x-dynamic-component 
+                        :component="'svg.' . $this->player->victory_shape"
+                        class="w-14 h-14"
+                    />
+                </div>
+            </flux:card>
+        </div>
+
+        <div class="w-full" :class="{ 'victory-wave-glow': opponent_is_victor }">
+            <flux:card class="w-full">
+                <div class="flex flex-row justify-between items-center text-zinc-800 dark:text-zinc-200" :class="{ 'animate-pulse': !is_player_turn && game_status === 'active' }">
+                <div class="flex flex-col items-start w-full space-y-2">
+                    <flux:heading class="text-left w-full">
+                        {{ $this->opponent->user->name }}
+                    </flux:heading>
+                    <div class="flex flex-row space-x-2 items-center">
+                        <div class="bg-light-teal dark:bg-dark-teal w-6 h-6 rounded-lg flex items-center justify-center">
+                            <p class="font-bold text-white" x-text="opponent_hand"></p>
+                        </div>
+                        <flux:badge color="gray" size="sm" variant="outline" icon="star">{{ $this->opponent->user->rating }}</flux:badge>
+                        @unless($this->opponent->user->email === 'bot@bot.bot')
+                            <template x-if="opponent_is_friend === 'request_incoming'">
+                                <flux:badge as="button" variant="ghost" inset size="sm" wire:click="sendFriendRequest" icon="user-plus">Confirm</flux:badge>
+                            </template>
+                            <template x-if="opponent_is_friend === 'request_outgoing'">
+                                <flux:badge size="sm" color="gray" icon="user">Request sent</flux:badge>
+                            </template>
+                            <template x-if="opponent_is_friend === 'not_friends'">
+                                <flux:badge as="button" variant="ghost" inset size="sm" wire:click="sendFriendRequest" icon="user-plus">Add</flux:badge>
+                            </template>
+                            <template x-if="opponent_is_friend === 'friends'">
+                                <flux:badge size="sm" color="green" icon="user">Friends</flux:badge>
+                            </template>
+                        @endunless
                     </div>
                 </div>
                 <x-dynamic-component 
-                    :component="'svg.' . $this->player->victory_shape"
+                    :component="'svg.' . $this->opponent->victory_shape"
                     class="w-14 h-14"
                 />
-            </div>
-        </flux:card>
-
-        <flux:card class="w-full" >
-            <div class="flex flex-row justify-between items-center text-zinc-800 dark:text-zinc-200" :class="{ 'animate-pulse': !is_player_turn && game_status === 'active' }">
-            <div class="flex flex-col items-start w-full space-y-2">
-                <flux:heading class="text-left w-full">
-                    {{ $this->opponent->user->name }}
-                    <flux:badge color="gray" size="sm" variant="outline" class="ml-1">{{ $this->opponent->user->rating }}</flux:badge>
-                </flux:heading>
-                @if($this->opponent_is_friend === 'request_incoming')
-                    <flux:button variant="ghost" inset size="xs" wire:click="sendFriendRequest">Confirm friend request</flux:button>
-                @elseif($this->opponent_is_friend === 'request_outgoing')
-                    <flux:badge size="sm" color="gray">Request sent</flux:badge>
-                @elseif($this->opponent_is_friend === 'not_friends')
-                    <flux:button variant="ghost" inset size="xs" wire:click="sendFriendRequest">Send friend request</flux:button>
-                @elseif($this->opponent_is_friend === 'friends')
-                    <flux:badge size="sm" color="green">Friends</flux:badge>
-                @endif
-                <div class="flex flex-row space-x-2 mt-2 items-center">
-                    <div class="bg-forest-green w-8 h-8 rounded-lg flex items-center justify-center">
-                        <p class="font-bold text-white" x-text="opponent_hand"></p>
-                    </div>
-                    <p class="text-xs">remaining</p>
                 </div>
-            </div>
-            <x-dynamic-component 
-                :component="'svg.' . $this->opponent->victory_shape"
-                class="w-14 h-14"
-            />
-            </div>
-        </flux:card>
-    </div>
-
-    {{-- debug info --}}
-    <div class="fixed top-4 right-4 bg-black/50 text-white p-2 rounded space-y-1">
-        <div>Phase: <span x-text="phase"></span></div>
-        <div>Animating: <span x-text="animating"></span></div>
-        <div>Is Player Turn: <span x-text="is_player_turn"></span></div>
-        <div>Game Status: <span x-text="game_status"></span></div>
+            </flux:card>
+        </div>
     </div>
 
     {{-- Gameboard --}}
@@ -325,7 +378,7 @@
                 <template x-for="i in 4">
                     <div>
                         <button 
-                            @click="playTile('down', i-1, {{ $this->player->id }}); $wire.playTile('down', i)"
+                            @click="playTile('down', i-1, {{ (string) $this->player->id }}); $wire.playTile('down', i)"
                             class="w-[58px] h-8 animate-pulse flex items-center justify-center"
                             x-show="Object.values(valid_slides).some(slide => slide['space'] === i && slide['direction'] === 'down')"
                         >
@@ -345,7 +398,7 @@
                 <template x-for="i in 4" >
                     <div>
                         <button 
-                            @click="playTile('from_left', i-1, {{ $this->player->id }}); $wire.playTile('right', i)"
+                            @click="playTile('from_left', i-1, {{ (string) $this->player->id }}); $wire.playTile('right', i)"
                             class="h-[58px] w-8 animate-pulse flex items-center justify-center"
                             x-show="Object.values(valid_slides).some(slide => slide['space'] === 1 + (i - 1) * 4 && slide['direction'] === 'right')"
                         >
@@ -366,7 +419,7 @@
                 <div class="relative">
                     <button 
                         x-show="elephant_phase && valid_elephant_moves.includes(i) && game_status === 'active' && is_player_turn"
-                        @click="moveElephant(i); $wire.moveElephant(i)" 
+                        @click="moveElephant({{ (string) $this->player->id }}, i); $wire.moveElephant(i)" 
                         class="absolute inset-0 bg-slate-400 opacity-20 animate-pulse rounded-lg z-20"
                     ></button>
                     <div 
@@ -380,9 +433,15 @@
             <template x-for="tile in tiles" :key="tile.id">
                 <div 
                     class="absolute w-[58px] h-[58px] rounded-lg transition-all duration-700 ease-in-out"
-                    :class="tile.playerId === {{ $this->player->id }} ? 'bg-beige' : 'bg-forest-green'"
+                    :class="{
+                        'bg-orange dark:bg-dark-orange': tile.playerId === {{ (string) $this->player->id }},
+                        'bg-light-teal dark:bg-dark-teal': tile.playerId !== {{ (string) $this->player->id }},
+                        'victory-wave-glow': winning_spaces.includes(tile.space)
+                    }"
                     :style="`
-                        transform: translate(${tile.x}px, ${tile.y}px) scale(${tile.scale || 1});
+                        --x: ${tile.x}px;
+                        --y: ${tile.y}px;
+                        transform: translate(${tile.x}px, ${tile.y}px);
                         opacity: ${tile.opacity === undefined ? 1 : tile.opacity};
                     `"
                 ></div>
@@ -394,7 +453,7 @@
                 class="absolute w-[58px] h-[58px]"
                 :class="{ 'transition-all duration-700 ease-in-out': !init }"
             >
-                <x-svg.elephant class="w-11 h-11 mx-auto mt-2 z-90"/>
+                <x-svg.elephant class="w-11 h-11 dark:text-white text-gray-900 mx-auto mt-2 z-90"/>
             </div>
         </div>
 
@@ -404,7 +463,7 @@
                 <template x-for="i in 4">
                     <div>
                         <button 
-                            @click="playTile('from_right', i-1, {{ $this->player->id }}); $wire.playTile('left', i)"
+                            @click="playTile('from_right', i-1, {{ (string) $this->player->id }}); $wire.playTile('left', i)"
                             class="h-[58px] w-8 animate-pulse rounded-lg flex items-center justify-center"
                             x-show="Object.values(valid_slides).some(slide => slide['space'] === i * 4 && slide['direction'] === 'left')"
                         >
@@ -424,7 +483,7 @@
                 <template x-for="i in 4">
                     <div>
                         <button 
-                            @click="playTile('up', i-1, {{ $this->player->id }}); $wire.playTile('up', i)"
+                            @click="playTile('up', i-1, {{ (string) $this->player->id }}); $wire.playTile('up', i)"
                             class="w-[58px] h-8 animate-pulse flex items-center justify-center"
                             x-show="Object.values(valid_slides).some(slide => slide['space'] === i +12 && slide['direction'] === 'up')"
                         >

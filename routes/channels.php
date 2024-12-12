@@ -11,3 +11,7 @@ Broadcast::channel('App.Models.User.{id}', function ($user, $id) {
 Broadcast::channel('games.{game_id}', function (User $user, int $game_id) {
     return Game::find($game_id)->players->pluck('user_id')->contains($user->id);
 });
+
+Broadcast::channel('users.{user_id}', function (User $user, int $user_id) {
+    return (int) $user->id === (int) $user_id;
+});

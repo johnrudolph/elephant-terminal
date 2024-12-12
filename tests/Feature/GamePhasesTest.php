@@ -84,7 +84,7 @@ it('ends the game when a player has a 2x2 grid anywhere', function () {
     $this->player_1->playTile(13, 'right');
 
     expect($this->game->state()->status)->toBe('complete');
-    expect($this->game->state()->victors)->toBe([(string) $this->player_1->id]);
+    expect($this->game->state()->victor_ids)->toBe([(string) $this->player_1->id]);
 });
 
 it('can have multiple winners', function () {
@@ -124,8 +124,8 @@ it('can have multiple winners', function () {
     $this->player_2->playTile(8, 'left');
 
     expect($this->game->state()->status)->toBe('complete');
-    expect(collect($this->game->state()->victors))->toContain((string) $this->player_1->id);
-    expect(collect($this->game->state()->victors))->toContain((string) $this->player_2->id);
+    expect(collect($this->game->state()->victor_ids))->toContain((string) $this->player_1->id);
+    expect(collect($this->game->state()->victor_ids))->toContain((string) $this->player_2->id);
 });
 
 it('ends the game if both players are out of tiles', function () {
@@ -177,5 +177,5 @@ it('ends the game if both players are out of tiles', function () {
     $this->player_2->playTile(5, 'right');
 
     expect($this->game->state()->status)->toBe('complete');
-    expect($this->game->state()->victors)->toBe([]);
+    expect($this->game->state()->victor_ids)->toBe([]);
 });

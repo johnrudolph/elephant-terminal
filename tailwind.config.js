@@ -16,12 +16,15 @@ export default {
             },
             colors: {
                 'teal': '#007393',
+                'light-teal': '#00A8D6',
+                'dark-teal': '#00607A',
                 'forest-green': '#005127',
                 'maroon': '#B30000',
                 'deep-purple': '#281E30',
                 'pink': '#933258',
                 'beige': '#D1B591',
-                'orange': '#FF5541',
+                'orange': '#FF6857',
+                'dark-orange': '#A81100',
             }
         },
     },

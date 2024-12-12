@@ -1,3 +1,23 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@keyframes victory-wave-glow {
+    0%, 100% {
+        transform: translate(var(--x), var(--y));
+        box-shadow: 0 0 5px #fff, 0 0 10px #fff, 0 0 15px #ff8c00;
+        border-radius: 0.75rem;
+    }
+    25% {
+        transform: translate(var(--x), calc(var(--y) - 5px)) rotate(5deg);
+        box-shadow: 0 0 10px #fff, 0 0 20px #fff, 0 0 30px #ff8c00;
+        border-radius: 0.75rem;
+    }
+    75% {
+        transform: translate(var(--x), calc(var(--y) - 5px)) rotate(-5deg);
+        box-shadow: 0 0 10px #fff, 0 0 20px #fff, 0 0 30px #ff8c00;
+        border-radius: 0.75rem;
+    }
+}
+
+.victory-wave-glow { animation: victory-wave-glow 1.5s ease-in-out infinite; border-radius: 0.75rem; }

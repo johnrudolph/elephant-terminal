@@ -173,7 +173,7 @@ trait BoardLogic
         return $valid_elephant_moves;
     }
 
-    public function victor(array $board): array
+    public function victors(array $board): array
     {
         return $this->players()
             ->filter(fn($player) => $this->isVictorious($player, $board))
@@ -181,7 +181,7 @@ trait BoardLogic
             ->toArray();
     }
 
-    public function isVictorious(PlayerState $player, array $board)
+    public function winningSpaces(PlayerState $player, array $board): array
     {
         $possible_victory_sets = match ($player->victory_shape) {
             'square' => $this::SQUARE_VICTORIES,
@@ -193,14 +193,18 @@ trait BoardLogic
         };
 
         return collect($possible_victory_sets)
-            ->map(fn($set) => 
+            ->filter(fn($set) => 
                 collect($set)
                     ->reduce(function (int $spaces_in_set_occupied_by_player, int $space) use($board, $player) {
                         return $spaces_in_set_occupied_by_player + ($board[$space] === (string) $player->id ? 1 : 0);
-                    }, 0)
+                    }, 0) === 4
             )
-            ->filter(fn($set) => $set === 4)
-            ->count() > 0;
+            ->toArray();
+    }
+
+    public function isVictorious(PlayerState $player, array $board)
+    {
+        return count($this->winningSpaces($player, $board)) > 0;
     }
 
     const SQUARE_VICTORIES = [
