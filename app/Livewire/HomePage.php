@@ -16,7 +16,7 @@ class HomePage extends Component
 {
     public bool $is_bot_game = false;
 
-    public bool $is_ranked_game = false;
+    public bool $is_ranked_game = true;
 
     public bool $is_friends_only = false;
 

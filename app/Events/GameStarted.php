@@ -57,7 +57,7 @@ class GameStarted extends Event
         $game->save();
 
         Player::find($game->current_player_id)->update([
-            'forfeits_at' => Carbon::now()->addSeconds(65),
+            'forfeits_at' => Carbon::now()->addSeconds(35),
         ]);
 
         GameStartedBroadcast::dispatch($game);
