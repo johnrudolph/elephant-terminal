@@ -15,6 +15,10 @@ class Player extends Model
 {
     use HasFactory, HasSnowflakes;
 
+    protected $casts = [
+        'forfeits_at' => 'datetime',
+    ];
+
     protected $guarded = [];
 
     public function state()

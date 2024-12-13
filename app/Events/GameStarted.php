@@ -3,8 +3,10 @@
 namespace App\Events;
 
 use App\Models\Game;
+use App\Models\Player;
 use Thunk\Verbs\Event;
 use App\States\GameState;
+use Illuminate\Support\Carbon;
 use App\Events\GameStartedBroadcast;
 use Thunk\Verbs\Attributes\Autodiscovery\StateId;
 
@@ -53,6 +55,10 @@ class GameStarted extends Event
         $game = Game::find($this->game_id);
         $game->status = 'active';
         $game->save();
+
+        Player::find($game->current_player_id)->update([
+            'forfeits_at' => Carbon::now()->addSeconds(65),
+        ]);
 
         GameStartedBroadcast::dispatch($game);
     }

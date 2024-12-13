@@ -6,9 +6,11 @@ use App\Models\Game;
 use App\Models\Move;
 use App\Models\Player;
 use Livewire\Component;
+use App\Events\GameForfeited;
+use Illuminate\Support\Carbon;
 use Thunk\Verbs\Facades\Verbs;
-use App\Events\PlayerPlayedTile;
 use App\Events\UserAddedFriend;
+use App\Events\PlayerPlayedTile;
 use Livewire\Attributes\Computed;
 use Illuminate\Support\Facades\Auth;
 
@@ -43,6 +45,8 @@ class GameView extends Component
     public bool $player_is_victor;
 
     public bool $opponent_is_victor;
+
+    public ?Carbon $player_forfeits_at;
 
     #[Computed]
     public function user()
@@ -121,6 +125,8 @@ class GameView extends Component
             (string) $this->opponent->id, 
             $this->game->victor_ids
         );
+
+        $this->player_forfeits_at = $this->player->forfeits_at;
     }
 
     public function playTile($direction, $index)
@@ -184,7 +190,8 @@ class GameView extends Component
 
         $this->dispatch('opponent-moved-elephant', [
             'position' => $move->elephant_after,
-            'player_id' => (string) $move->player_id
+            'player_id' => (string) $move->player_id,
+            'player_forfeits_at' => $this->player->fresh()->forfeits_at,
         ]);
 
         $this->game->refresh();
@@ -271,6 +278,15 @@ class GameView extends Component
         $this->dispatch('friend-status-changed', [
             'status' => $this->opponent_is_friend,
         ]);
+    }
+
+    public function handleForfeit()
+    {
+        GameForfeited::fire(
+            game_id: $this->game->id,
+            loser_id: $this->player->id,
+            winner_id: $this->opponent->id,
+        );
     }
 
     public function sendFriendRequest()

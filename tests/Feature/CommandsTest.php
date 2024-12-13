@@ -58,3 +58,18 @@ it('does not forfeit nonabandoned games', function () {
     expect($this->game->victor_ids)->toContain($this->player_1->id);
     expect(count($this->game->winning_spaces))->toBe(0);
 });
+
+it('sets the expected forfeit timecodes for players', function () {
+    $this->bootMultiplayerGame();
+    $this->game->refresh();
+    expect($this->player_1->fresh()->forfeits_at)->toBeGreaterThan(now()->addSeconds(30));
+    expect($this->player_1->fresh()->forfeits_at)->toBeLessThan(now()->addSeconds(40));
+    expect($this->player_2->fresh()->forfeits_at)->toBeNull();
+
+    $this->player_1->playTile(1, 'right');
+    $this->player_1->moveElephant(6);
+
+    expect($this->player_1->fresh()->forfeits_at)->toBeNull();
+    expect($this->player_2->fresh()->forfeits_at)->toBeGreaterThan(now()->addSeconds(30));
+    expect($this->player_2->fresh()->forfeits_at)->toBeLessThan(now()->addSeconds(40));
+});

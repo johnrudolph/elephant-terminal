@@ -13,9 +13,11 @@
             winning_spaces: @json($this->winning_spaces),
             player_is_victor: {{ $this->player_is_victor ? 'true' : 'false' }},
             opponent_is_victor: {{ $this->opponent_is_victor ? 'true' : 'false' }},
+            player_forfeits_at: @json($this->player_forfeits_at),
         };
 
         return {
+            player_forfeits_at: defaults.player_forfeits_at,
             victor_ids: defaults.victor_ids,
             player_is_victor: defaults.player_is_victor,
             opponent_is_victor: defaults.opponent_is_victor,
@@ -70,6 +72,7 @@
             },
 
             moveElephant(player_id, space) {
+                this.player_forfeits_at = null;
                 this.animating = true;
                 this.elephant_space = space;
                 const coords = this.spaceToCoords(space);
@@ -275,6 +278,7 @@
 
                 this.$wire.on('opponent-moved-elephant', (data) => {
                     this.moveElephant(data[0].player_id, data[0].position);
+                    this.player_forfeits_at = data[0].player_forfeits_at;
                 });
 
                 this.$wire.on('friend-status-changed', (data) => {
@@ -497,4 +501,45 @@
             </div>
         </div>
     </div>
+
+    <template x-if="player_forfeits_at">
+        <div class="w-[240px] mt-4">
+            <div 
+                x-data="{
+                    progress: 0,
+                    isUrgent: false,
+                    hasExpired: false,
+                    updateProgress() {
+                        const now = new Date();
+                        const forfeitTime = new Date(this.player_forfeits_at);
+                        const startTime = new Date(forfeitTime - 60000);
+                        const totalDuration = forfeitTime - startTime;
+                        const elapsed = now - startTime;
+                        this.progress = Math.min(100, Math.max(0, (elapsed / totalDuration) * 100));
+                        this.isUrgent = (forfeitTime - now) / 1000 <= 10;
+                        
+                        // Check if timer just hit zero and hasn't been handled yet
+                        if (!this.hasExpired && now >= forfeitTime) {
+                            this.hasExpired = true;
+                            $wire.handleForfeit();
+                        }
+                    }
+                }"
+                x-init="
+                    updateProgress();
+                    setInterval(() => updateProgress(), 100)
+                "
+                class="h-2 bg-gray-200 rounded-full overflow-hidden"
+            >
+                <div 
+                    class="h-full transition-all duration-100 ease-linear"
+                    :class="{ 
+                        'animate-pulse bg-red-500': isUrgent,
+                        'bg-gray-700 dark:bg-gray-600': !isUrgent 
+                    }"
+                    :style="`width: ${progress}%`"
+                ></div>
+            </div>
+        </div>
+    </template>
 </div>

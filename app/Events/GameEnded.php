@@ -43,6 +43,9 @@ class GameEnded extends Event
         $game->save();
 
         $game->players->each(function ($player) {
+            $player->forfeits_at = null;
+            $player->save();
+
             $user = $player->user;
 
             $user->rating = $user->state()->rating;

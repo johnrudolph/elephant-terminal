@@ -14,16 +14,18 @@ class ForfeitGamesJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    protected $abandoned_games;
+    protected $forfeiting_players;
 
-    public function __construct(Collection $abandoned_games)
+    public function __construct(Collection $forfeiting_players)
     {
-        $this->abandoned_games = $abandoned_games;
+        $this->forfeiting_players = $forfeiting_players;
     }
 
     public function handle()
     {
-        foreach ($this->abandoned_games as $game) {
+        foreach ($this->forfeiting_players as $player) {
+            $game = $player->game;
+
             $loser_id = (int) $game->current_player_id;
             $winner_id = (int) $game->players->firstWhere('id', '!=', $loser_id)->id;
 

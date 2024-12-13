@@ -19,6 +19,7 @@ return new class extends Migration
             $table->boolean('is_host');
             $table->boolean('is_bot');
             $table->timestamps();
+            $table->timestamp('forfeits_at')->nullable();
         });
     }
 };

@@ -31,6 +31,11 @@ class GameForfeited extends Event
         $game->victor_ids = [$this->winner_id];
         $game->save();
 
+        $game->players->each(function ($player) {
+            $player->forfeits_at = null;
+            $player->save();
+        });
+
         GameEndedBroadcast::dispatch($game);
     }
 }

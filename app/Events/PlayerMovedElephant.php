@@ -4,9 +4,11 @@ namespace App\Events;
 
 use App\Models\Game;
 use App\Models\Move;
+use App\Models\Player;
 use Thunk\Verbs\Event;
 use App\States\GameState;
 use App\States\PlayerState;
+use Illuminate\Support\Carbon;
 use App\Events\PlayerMovedElephantBroadcast;
 use Thunk\Verbs\Attributes\Autodiscovery\StateId;
 
@@ -110,6 +112,18 @@ class PlayerMovedElephant extends Event
             'elephant_before' => $this->elephant_space_before,
             'elephant_after' => $game->elephant_space,
             'bot_move_scores' => $this->bot_move_scores,
+        ]);
+
+        $previous_player = Player::find($this->player_id);
+
+        $previous_player->update([
+            'forfeits_at' => null,
+        ]);
+
+        $next_player = Player::find($game->current_player_id);
+
+        $next_player->update([
+            'forfeits_at' => Carbon::now()->addSeconds(35),
         ]);
 
         PlayerMovedElephantBroadcast::dispatch($game_model, $move);

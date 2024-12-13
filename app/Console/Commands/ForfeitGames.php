@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Models\Game;
+use App\Models\Player;
 use App\Jobs\ForfeitGamesJob;
 use Illuminate\Console\Command;
 
@@ -13,27 +14,15 @@ class ForfeitGames extends Command
 
     public function handle()
     {
-        $games_to_forfeit = Game::where('status', 'active')
-            ->where(function ($query) {
-                // Games with moves where last elephant move is over 1 minute old
-                $query->whereHas('moves', function ($q) {
-                    $q->where('type', 'elephant')
-                        ->where('created_at', '<', now()->subMinutes(1))
-                        ->latest();
-                })
-                // OR games with no moves that are over 1 minute old
-                ->orWhere(function ($q) {
-                    $q->whereDoesntHave('moves')
-                        ->where('created_at', '<', now()->subMinutes(1));
-                });
-            })
+        $players_to_forfeit = Player::whereNotNull('forfeits_at')
+            ->where('forfeits_at', '<', now())
             ->get();
 
-        if ($games_to_forfeit->count() > 0) {
-            ForfeitGamesJob::dispatch($games_to_forfeit);
-            $this->info("{$games_to_forfeit->count()} games found and queued for forfeiting.");
+        if ($players_to_forfeit->count() > 0) {
+            ForfeitGamesJob::dispatch($players_to_forfeit);
+            $this->info("{$players_to_forfeit->count()} players found and queued for forfeiting.");
         } else {
-            $this->info('No games found to forfeit.');
+            $this->info('No players found to forfeit.');
         }
     }
 }
