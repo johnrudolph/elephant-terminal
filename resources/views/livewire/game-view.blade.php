@@ -214,14 +214,6 @@
                     space: targetSpace
                 };
                 this.tiles.push(newTile);
-
-                // if (player_victory_status.has_won) {
-                //     this.game_status = 'ended';
-                //     this.game_winner = {{ (string) $this->player->id }};
-                // } else if (opponent_victory_status.has_won) {
-                //     this.game_status = 'ended';
-                //     this.game_winner = {{ (string) $this->opponent->id }};
-                // }
                 
                 setTimeout(() => {
                     const updatedTiles = this.tiles.map(tile => {
@@ -305,6 +297,7 @@
 </script>
 @endscript
 
+<div>
 <div 
     x-data="gameBoard()"
     wire:ignore
@@ -539,4 +532,5 @@
             </div>
         </div>
     </template>
+</div>
 </div>
