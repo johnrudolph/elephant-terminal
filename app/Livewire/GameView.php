@@ -12,6 +12,7 @@ use Thunk\Verbs\Facades\Verbs;
 use App\Events\UserAddedFriend;
 use App\Events\PlayerPlayedTile;
 use Livewire\Attributes\Computed;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
 
 class GameView extends Component
@@ -182,6 +183,7 @@ class GameView extends Component
 
     public function handleElephantMove($event)
     {
+        Log::info('Elephant move event received', ['event' => $event]);
         $move = Move::find($event['move_id']);
 
         if ($move->player_id === $this->player->id) {
@@ -211,6 +213,7 @@ class GameView extends Component
 
     public function handleTilePlayed($event)
     {
+        \Log::info('Tile played event received', ['event' => $event]);
         $move = Move::find($event['move_id']);
 
         if ($move->player_id === $this->player->id) {
@@ -282,11 +285,11 @@ class GameView extends Component
 
     public function handleForfeit()
     {
-        GameForfeited::fire(
-            game_id: $this->game->id,
-            loser_id: $this->player->id,
-            winner_id: $this->opponent->id,
-        );
+        // GameForfeited::fire(
+        //     game_id: $this->game->id,
+        //     loser_id: $this->player->id,
+        //     winner_id: $this->opponent->id,
+        // );
     }
 
     public function sendFriendRequest()

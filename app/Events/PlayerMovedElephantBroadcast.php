@@ -4,6 +4,7 @@ namespace App\Events;
 
 use App\Models\Game;
 use App\Models\Move;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Broadcasting\Channel;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Broadcasting\PrivateChannel;
@@ -31,6 +32,7 @@ class PlayerMovedElephantBroadcast implements ShouldBroadcast
      */
     public function broadcastOn(): array
     {
+        Log::info('Broadcasting elephant move on channel:', ['channel' => "private-games.{$this->game->id}"]);
         return [
             new PrivateChannel('games.'.$this->game->id),
         ];
