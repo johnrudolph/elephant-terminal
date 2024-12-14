@@ -5,6 +5,8 @@ namespace App\Models;
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 
 use App\States\UserState;
+use App\Events\GameCanceled;
+use App\Events\GameForfeited;
 use Glhd\Bits\Database\HasSnowflakes;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -119,5 +121,26 @@ class User extends Authenticatable
         }
 
         return 'not_friends';
+    }
+
+    public function closeInactiveGames()
+    {
+        $this->games
+            ->filter(fn($g) => $g->status === 'created' && $g->id !== $this->game_id)
+            ->each(function ($game) {
+                GameCanceled::fire(game_id: $game->id);
+            });
+
+        $this->games
+            ->filter(fn($g) => $g->status === 'active' && $g->id !== $this->game_id)
+            ->each(function ($game) {
+                $players = $game->players;
+
+                GameForfeited::fire(
+                    game_id: $game->id,
+                    winner_id: $players->firstWhere('user_id', '!=', $this->id),
+                    loser_id: $players->firstWhere('user_id', $this->id),
+                );
+            });
     }
 }

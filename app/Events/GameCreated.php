@@ -57,12 +57,5 @@ class GameCreated extends Event
             'is_ranked' => $this->is_ranked,
             'is_friends_only' => $this->is_friends_only,
         ]);
-
-        User::find($this->user_id)->games
-            ->filter(fn($g) => $g->status === 'created' && $g->id !== $this->game_id)
-            ->each(function ($game) {
-                $game->status = 'canceled';
-                $game->save();
-            });
     }
 }
