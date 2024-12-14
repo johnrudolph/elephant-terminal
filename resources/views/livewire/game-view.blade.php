@@ -35,11 +35,23 @@
             valid_elephant_moves: @entangle('valid_elephant_moves'),
             valid_slides: @entangle('valid_slides'),
             opponent_is_friend: defaults.opponent_is_friend,
+            isMuted: localStorage.getItem('gameAudioMuted') === 'true' || false,
             get tile_phase() {
                 return !this.animating && this.is_player_turn && this.phase === 'tile' && this.game_status === 'active';
             },
             get elephant_phase() {
                 return !this.animating && this.is_player_turn && this.phase === 'move' && this.game_status === 'active';
+            },
+
+            playSound(filename) {
+                if (!this.isMuted) {
+                    const audio = new Audio(`/audio/${filename}`);
+                    audio.play();
+                }
+            },
+            toggleMute() {
+                this.isMuted = !this.isMuted;
+                localStorage.setItem('gameAudioMuted', this.isMuted);
             },
 
             // Methods
@@ -72,6 +84,7 @@
             },
 
             moveElephant(player_id, space) {
+                this.playSound(`footsteps_${Math.floor(Math.random() * 2) + 1}.mp3`);
                 this.player_forfeits_at = null;
                 this.animating = true;
                 this.elephant_space = space;
@@ -93,6 +106,7 @@
             },
 
             playTile(direction, position, player_id) {
+                this.playSound(`slide_${Math.floor(Math.random() * 5) + 1}.mp3`);
                 this.animating = true;
                 this.phase = 'move';
 
@@ -537,4 +551,14 @@
             </div>
         </div>
     </template>
+
+    {{-- Mute button --}}
+    <div class="fixed bottom-4 right-4">
+        <template x-if="isMuted">
+            <flux:button @click="toggleMute()" variant="subtle" icon="speaker-x-mark" />
+        </template>
+        <template x-if="!isMuted">
+            <flux:button @click="toggleMute()" variant="subtle" icon="speaker-wave" />
+        </template>
+    </div>
 </div>
