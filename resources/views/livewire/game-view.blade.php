@@ -506,7 +506,7 @@
                         }
                         const now = new Date();
                         const forfeitTime = new Date(this.player_forfeits_at);
-                        const startTime = new Date(forfeitTime - 60000);
+                        const startTime = new Date(forfeitTime - 35000);
                         const totalDuration = forfeitTime - startTime;
                         const elapsed = now - startTime;
                         this.progress = Math.min(100, Math.max(0, (elapsed / totalDuration) * 100));
@@ -524,13 +524,13 @@
                     updateProgress();
                     progressInterval = setInterval(() => updateProgress(), 100)
                 "
-                class="h-2 bg-gray-200 rounded-full overflow-hidden"
+                class="h-2 bg-gray-200 dark:bg-zinc-700 rounded-full overflow-hidden"
             >
                 <div 
                     class="h-full transition-all duration-100 ease-linear"
                     :class="{ 
                         'animate-pulse bg-red-500': isUrgent,
-                        'bg-gray-700 dark:bg-gray-600': !isUrgent 
+                        'bg-gray-700 dark:bg-gray-500': !isUrgent 
                     }"
                     :style="`width: ${progress}%`"
                 ></div>
