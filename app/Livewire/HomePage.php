@@ -103,6 +103,8 @@ class HomePage extends Component
             GameStarted::fire(game_id: $game_id);
         }
 
+        $this->user->closeInactiveGames();
+
         Verbs::commit();
 
         return redirect()->route('games.show', $game_id);
@@ -121,6 +123,8 @@ class HomePage extends Component
         );
 
         GameStarted::fire(game_id: (int) $game_id);
+
+        $this->user->closeInactiveGames();
 
         Verbs::commit();
 

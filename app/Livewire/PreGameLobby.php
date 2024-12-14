@@ -70,6 +70,8 @@ class PreGameLobby extends Component
             game_id: $this->game->id,
             user_id: $this->user->id,
         );
+
+        $this->user->closeInactiveGames();
     }
 
     public function start()
