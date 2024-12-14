@@ -66,9 +66,14 @@ class PreGameLobby extends Component
 
     public function join()
     {
+        $victory_shape = $this->game->players->first()->victory_shape;
+
         PlayerCreated::fire(
             game_id: $this->game->id,
             user_id: $this->user->id,
+            is_host: false,
+            is_bot: false,
+            victory_shape: $victory_shape,
         );
 
         $this->user->closeInactiveGames();
