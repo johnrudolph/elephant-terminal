@@ -491,8 +491,6 @@
         </div>
     </div>
 
-    <div x-on:forfeit-handler.window="$wire.handleForfeit()"></div>
-
     <template x-if="player_forfeits_at">
         <div class="w-[240px] mt-4">
             <div 
@@ -501,6 +499,11 @@
                     isUrgent: false,
                     hasExpired: false,
                     updateProgress() {
+                        if (! player_forfeits_at) {
+                            clearInterval(this.progressInterval)
+
+                            return
+                        }
                         const now = new Date();
                         const forfeitTime = new Date(this.player_forfeits_at);
                         const startTime = new Date(forfeitTime - 60000);
@@ -512,13 +515,14 @@
                         // Check if timer just hit zero and hasn't been handled yet
                         if (!this.hasExpired && now >= forfeitTime) {
                             this.hasExpired = true;
-                            this.$dispatch('forfeit-handler');
+                            $wire.handleForfeit();
                         }
-                    }
+                    },
+                    progressInterval: null
                 }"
                 x-init="
                     updateProgress();
-                    setInterval(() => updateProgress(), 100)
+                    progressInterval = setInterval(() => updateProgress(), 100)
                 "
                 class="h-2 bg-gray-200 rounded-full overflow-hidden"
             >
