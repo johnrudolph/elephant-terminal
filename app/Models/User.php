@@ -138,8 +138,8 @@ class User extends Authenticatable
 
                 GameForfeited::fire(
                     game_id: $game->id,
-                    winner_id: $players->firstWhere('user_id', '!=', $this->id),
-                    loser_id: $players->firstWhere('user_id', $this->id),
+                    winner_id: $players->firstWhere('user_id', '!=', $this->id)->id,
+                    loser_id: $players->firstWhere('user_id', $this->id)->id,
                 );
             });
     }
