@@ -214,6 +214,17 @@
                     space: targetSpace
                 };
                 this.tiles.push(newTile);
+
+                const player_victory_status = checkForVictory(this.tiles, '{{ $this->player->victory_shape }}', {{ (string) $this->player->id }});
+                const opponent_victory_status = checkForVictory(this.tiles, '{{ $this->opponent->victory_shape }}', {{ (string) $this->opponent->id }});
+
+                if (player_victory_status.has_won) {
+                    this.game_status = 'ended';
+                    this.game_winner = {{ (string) $this->player->id }};
+                } else if (opponent_victory_status.has_won) {
+                    this.game_status = 'ended';
+                    this.game_winner = {{ (string) $this->opponent->id }};
+                }
                 
                 setTimeout(() => {
                     const updatedTiles = this.tiles.map(tile => {
@@ -297,7 +308,6 @@
 </script>
 @endscript
 
-<div>
 <div 
     x-data="gameBoard()"
     wire:ignore
@@ -492,6 +502,8 @@
         </div>
     </div>
 
+    <div x-on:forfeit-handler.window="$wire.handleForfeit()"></div>
+
     <template x-if="player_forfeits_at">
         <div class="w-[240px] mt-4">
             <div 
@@ -511,7 +523,7 @@
                         // Check if timer just hit zero and hasn't been handled yet
                         if (!this.hasExpired && now >= forfeitTime) {
                             this.hasExpired = true;
-                            $wire.handleForfeit();
+                            this.$dispatch('forfeit-handler');
                         }
                     }
                 }"
@@ -532,5 +544,4 @@
             </div>
         </div>
     </template>
-</div>
 </div>
