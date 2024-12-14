@@ -214,17 +214,6 @@
                     space: targetSpace
                 };
                 this.tiles.push(newTile);
-
-                const player_victory_status = checkForVictory(this.tiles, '{{ $this->player->victory_shape }}', {{ (string) $this->player->id }});
-                const opponent_victory_status = checkForVictory(this.tiles, '{{ $this->opponent->victory_shape }}', {{ (string) $this->opponent->id }});
-
-                if (player_victory_status.has_won) {
-                    this.game_status = 'ended';
-                    this.game_winner = {{ (string) $this->player->id }};
-                } else if (opponent_victory_status.has_won) {
-                    this.game_status = 'ended';
-                    this.game_winner = {{ (string) $this->opponent->id }};
-                }
                 
                 setTimeout(() => {
                     const updatedTiles = this.tiles.map(tile => {
