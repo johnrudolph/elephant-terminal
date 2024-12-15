@@ -118,7 +118,7 @@
         <flux:tab.panel name="rules">
             <flux:card>
                 <flux:subheading>
-                    Take turns sliding a tile onto the board. Sliding tiles push other tiles into the next space. Tiles pushed off the the board return to your hand. The elephant blocks slides. Move the elephant each time you play a tile. If you are out of tiles, you skip your turn. This usually means you'll lose. The first player to create their victory shape wins.
+                    On your turn, you will slide a tile onto the board, then move the elephant. Sliding a tile into other tiles pushes them into the next space. When one of your tiles is pushed off the board, it returns to your hand. The elephant blocks slides. If you are out of tiles, you skip your turn. The first player to create their victory shape wins.
                 </flux:subheading>
             </flux:card>
         </flux:tab.panel>

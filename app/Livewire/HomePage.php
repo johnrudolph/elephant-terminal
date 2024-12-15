@@ -79,7 +79,9 @@ class HomePage extends Component
             is_friends_only: $this->is_friends_only,
         )->game_id;
 
-        $victory_shape = collect(['square', 'line', 'el', 'zig'])->random();
+        $victory_shape = $this->is_bot_game
+            ? 'square'
+            : collect(['square', 'line', 'el', 'zig'])->random();
 
         PlayerCreated::fire(
             game_id: $game_id,
