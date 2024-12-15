@@ -297,7 +297,9 @@
 
                 this.$wire.on('opponent-moved-elephant', (data) => {
                     this.playTile(data[0].tile_direction, data[0].tile_position, data[0].player_id);
-                    this.moveElephant(data[0].player_id, data[0].position);
+                    setTimeout(() => {
+                        this.moveElephant(data[0].player_id, data[0].elephant_move_position);
+                    }, 700);
                     this.player_forfeits_at = data[0].player_forfeits_at;
                 });
 
