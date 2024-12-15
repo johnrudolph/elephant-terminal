@@ -4,9 +4,9 @@ namespace App\Events;
 
 use App\Models\Game;
 use App\Models\Move;
+use App\Models\User;
 use App\Models\Player;
 use Thunk\Verbs\Event;
-use App\Events\GameEnded;
 use App\States\GameState;
 use App\States\PlayerState;
 use Thunk\Verbs\Attributes\Autodiscovery\StateId;
@@ -121,16 +121,23 @@ class PlayerPlayedTile extends Event
             ->map(fn ($player) => $player->hand)
             ->sum() === 0;
 
-        if (count($state->victors($state->board)) > 0 || $both_player_hands_are_empty) {
+        $state->victor_ids = $state->victors($state->board);
+
+        $game_over = $both_player_hands_are_empty || count($state->victor_ids) > 0;
+
+        if ($game_over) {
             $state->status = 'complete';
             $state->victor_ids = $state->victors($state->board);
-        }
-    }
-
-    public function fired()
-    {
-        if ($this->state(GameState::class)->status === 'complete') {
-            GameEnded::fire(game_id: $this->game_id);
+    
+            $state->winning_spaces = collect($state->victor_ids)
+                ->map(fn($v_id) => $this->state(GameState::class)->winningSpaces(PlayerState::load($v_id), $state->board))
+                ->values()
+                ->flatten()
+                ->toArray();
+    
+            if ($state->is_ranked) {
+                $state->players()->each(fn($p) => $p->user()->rating = User::calculateNewRating($p, $state));
+            }
         }
     }
 
@@ -148,6 +155,7 @@ class PlayerPlayedTile extends Event
             'phase' => $game->phase,
             'current_player_id' => $game->current_player_id,
             'victor_ids' => $game->victor_ids,
+            'winning_spaces' => $game->winning_spaces,
         ]);
 
         Player::find($game->current_player_id)->update([
@@ -166,6 +174,16 @@ class PlayerPlayedTile extends Event
             'initial_slide' => ['space' => $this->space, 'direction' => $this->direction],
         ]);
 
-        PlayerPlayedTileBroadcast::dispatch($game_model, $move);
+        if (count($game->victor_ids) > 0) {
+            PlayerPlayedTileBroadcast::dispatch($game_model, $move);
+
+            $game_model->players->each(function ($player) {
+                $player->forfeits_at = null;
+                $player->save();
+
+                $player->user->rating = $player->user->state()->rating;
+                $player->user->save();
+            });
+        }
     }
 }

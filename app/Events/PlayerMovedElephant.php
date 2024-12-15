@@ -126,6 +126,10 @@ class PlayerMovedElephant extends Event
             'forfeits_at' => Carbon::now()->addSeconds(35),
         ]);
 
-        PlayerMovedElephantBroadcast::dispatch($game_model, $move);
+        $prior_tile_move = $game_model->moves
+            ->filter(fn($m) => $m->type === 'tile')
+            ->last();
+
+        PlayerMovedElephantBroadcast::dispatch($game_model, $move, $prior_tile_move);
     }
 }

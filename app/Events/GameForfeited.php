@@ -3,6 +3,7 @@
 namespace App\Events;
 
 use App\Models\Game;
+use App\Models\User;
 use Thunk\Verbs\Event;
 use App\States\GameState;
 use App\Events\GameEndedBroadcast;
@@ -22,6 +23,10 @@ class GameForfeited extends Event
         $state->status = 'completed';
 
         $state->victor_ids = [$this->winner_id];
+
+        if ($state->is_ranked) {
+            $state->players()->each(fn($p) => $p->user()->rating = User::calculateNewRating($p, $state));
+        }
     }
 
     public function handle()
@@ -34,6 +39,9 @@ class GameForfeited extends Event
         $game->players->each(function ($player) {
             $player->forfeits_at = null;
             $player->save();
+
+            $player->user->rating = $player->user->state()->rating;
+            $player->user->save();
         });
 
         GameEndedBroadcast::dispatch($game);
