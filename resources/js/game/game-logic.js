@@ -1,4 +1,4 @@
-export function checkForVictory(tiles, victoryShape, playerId) {
+export function victory_status(tiles, victoryShape, playerId) {
     const possibleVictorySets = getPossibleVictorySets(victoryShape);
     
     const board = tiles.reduce((acc, tile) => {
