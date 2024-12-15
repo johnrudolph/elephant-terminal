@@ -181,7 +181,6 @@ class GameView extends Component
 
     public function handleElephantMove($event)
     {
-        dump('elephant moved', $event);
         $move = Move::find($event['elephant_move_id']);
 
         $prior_tile_move = Move::find($event['tile_move_id']);
@@ -231,7 +230,6 @@ class GameView extends Component
 
     public function handleTilePlayed($event)
     {
-        dump('played tile', $event);
         $move = Move::find($event['move_id']);
 
         if ($move->player_id === $this->player->id) {
