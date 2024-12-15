@@ -207,6 +207,8 @@ class GameView extends Component
         $this->game_status = $this->game->status;
 
         $this->is_player_turn = $this->game->current_player_id === (string) $this->player->id && $this->game->status === 'active';
+
+        $this->player_forfeits_at = $this->player->fresh()->forfeits_at;
     }
 
     public function handleTilePlayed($event)
