@@ -243,10 +243,7 @@
                 player_victory_status = victory_status(this.tiles, this.player_victory_shape, this.player_id);
                 opponent_victory_status = victory_status(this.tiles, this.opponent_victory_shape, this.opponent_id);
 
-                console.log(player_victory_status, opponent_victory_status);
-
                 if (player_victory_status.has_won) {
-                    console.log('PLAYER WON');
                     this.victor_ids.push(this.player_id);
                     this.game_status = 'completed';
                     this.winning_spaces.push(player_victory_status.winning_spaces);
@@ -254,17 +251,11 @@
                 }
 
                 if (opponent_victory_status.has_won) {
-                    console.log('OPPONENT WON');
                     this.victor_ids.push(this.opponent_id);
                     this.game_status = 'completed';
                     this.winning_spaces.push(opponent_victory_status.winning_spaces);
                     this.player_forfeits_at = null;
                 }
-
-                console.log('victors', this.victor_ids);
-                console.log('status', this.game_status);
-                console.log( 'spaces', this.winning_spaces);
-                console.log('player_forfeits_at', this.player_forfeits_at);
             },
 
             init() {
