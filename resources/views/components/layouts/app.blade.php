@@ -14,34 +14,45 @@
     </head>
     <body class="min-h-screen bg-white dark:bg-slate-900 text-zinc-800 dark:text-zinc-200">
         @if (auth()->user())
-        <flux:header container class="bg-zinc-50 border-b border-zinc-200 dark:bg-slate-900 dark:border-zinc-700">
-            <flux:navbar class="-mb-px">
-                <flux:navbar.item icon="home" href="/dashboard">Home</flux:navbar.item>
-                <flux:navbar.item icon="users" href="/friends">Friends</flux:navbar.item>
-                </flux:navbar>
-
+            <flux:sidebar sticky stashable class="border-r bg-white dark:bg-slate-900 border-zinc-200 dark:border-zinc-700">
+                <flux:sidebar.toggle class="lg:hidden" icon="x-mark" />
+        
+                <flux:brand href="#" logo="" name="Elephant in the Room" class="px-2" />
+        
+                <flux:navlist variant="outline">
+                    <flux:navlist.item icon="home" href="/dashboard">Home</flux:navlist.item>
+                    <flux:navlist.item icon="users" href="/friends">Friends</flux:navlist.item>
+                </flux:navlist>
+        
                 <flux:spacer />
-
-                <flux:navbar>
-                    <flux:navbar.item icon="cog-6-tooth" href="/profile" label="Settings" />
+        
+                <flux:navlist variant="outline">
+                    <flux:navlist.item icon="cog-6-tooth" href="/profile" label="Profile">Profile</flux:navlist.item>
                     <form method="POST" action="{{ route('logout') }}" class="inline">
                         @csrf
-                        <flux:navbar.item 
+                        <flux:navlist.item 
                             icon="power" 
                             as="button"
                             type="submit"
                             label="Logout" 
-                        />
+                        >
+                            Logout
+                    </flux:navlilst.item>
                     </form>
-                </flux:navbar>
-            </flux:header>
+                </flux:navlist>
+            </flux:sidebar>
+
+            <div class="lg:hidden">
+                <div class="fixed top-4 left-4">
+                    <flux:sidebar.toggle class="lg:hidden" variant="ghost" icon="bars-2" inset="left" />
+                </div>
+            </div>
         @endif
 
         <flux:main container class="max-w-screen-sm">
             <div class="flex flex-col pb-16">
                 {{ $slot }}
             </div>
-            <x-footer />
         </flux:main>
 
         @fluxScripts

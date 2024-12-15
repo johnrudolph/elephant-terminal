@@ -303,41 +303,55 @@
     class="flex items-center justify-center flex-col space-y-8"
 >
     {{-- player info --}}
-    <div class="flex flex-col items-center justify-center space-y-4 w-[300px]">
-        <div class="w-full" :class="{ 'victory-wave-glow': player_is_victor }">
-            <flux:card class="w-full">
-                <div class="flex flex-row justify-between items-center text-zinc-800 dark:text-zinc-200" :class="{ 'animate-pulse': is_player_turn && game_status === 'active' }">
-                    <div class="flex flex-col items-start w-full space-y-2">
-                        <flux:heading class="text-left w-full">
-                            {{ $this->player->user->name }}
-                        </flux:heading>
-                        <div class="flex flex-row space-x-2 items-center">
-                            <div class="bg-orange dark:bg-dark-orange w-6 h-6 rounded-lg flex items-center justify-center">
-                                <p class="font-bold text-white" x-text="player_hand"></p>
-                            </div>
-                            <flux:badge color="gray" size="sm" variant="outline" icon="star">{{ $this->player->user->rating }}</flux:badge>
+    <div class="flex flex-col items-center justify-center mt-10 space-y-4 w-[300px]">
+        <!-- Player section -->
+        <div class="w-full p-3 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg"
+            :class="{ 
+                'victory-wave-glow': player_is_victor,
+                'animate-pulse': is_player_turn && game_status === 'active' 
+            }"
+        >
+            <div class="flex justify-between items-center text-zinc-800 dark:text-zinc-200">
+                <div class="space-y-2">
+                    <flux:heading class="text-left">
+                        {{ $this->player->user->name }}
+                    </flux:heading>
+                    <div class="flex items-center space-x-2">
+                        <div class="bg-orange dark:bg-dark-orange w-6 h-6 rounded-lg flex items-center justify-center">
+                            <p class="font-bold text-white" x-text="player_hand"></p>
                         </div>
+                        <flux:badge color="gray" size="sm" variant="outline" icon="star">
+                            {{ $this->player->user->rating }}
+                        </flux:badge>
                     </div>
-                    <x-dynamic-component 
-                        :component="'svg.' . $this->player->victory_shape"
-                        class="w-14 h-14"
-                    />
                 </div>
-            </flux:card>
+                
+                <x-dynamic-component 
+                    :component="'svg.' . $this->player->victory_shape"
+                    class="w-14 h-14"
+                />
+            </div>
         </div>
 
-        <div class="w-full" :class="{ 'victory-wave-glow': opponent_is_victor }">
-            <flux:card class="w-full">
-                <div class="flex flex-row justify-between items-center text-zinc-800 dark:text-zinc-200" :class="{ 'animate-pulse': !is_player_turn && game_status === 'active' }">
-                <div class="flex flex-col items-start w-full space-y-2">
-                    <flux:heading class="text-left w-full">
+        <!-- Opponent section -->
+        <div class="w-full p-3 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg"
+            :class="{ 
+                'victory-wave-glow': opponent_is_victor,
+                'animate-pulse': !is_player_turn && game_status === 'active' 
+            }"
+        >
+            <div class="flex justify-between items-center text-zinc-800 dark:text-zinc-200">
+                <div class="space-y-2">
+                    <flux:heading class="text-left">
                         {{ $this->opponent->user->name }}
                     </flux:heading>
-                    <div class="flex flex-row space-x-2 items-center">
+                    <div class="flex items-center space-x-2">
                         <div class="bg-light-teal dark:bg-dark-teal w-6 h-6 rounded-lg flex items-center justify-center">
                             <p class="font-bold text-white" x-text="opponent_hand"></p>
                         </div>
-                        <flux:badge color="gray" size="sm" variant="outline" icon="star">{{ $this->opponent->user->rating }}</flux:badge>
+                        <flux:badge color="gray" size="sm" variant="outline" icon="star">
+                            {{ $this->opponent->user->rating }}
+                        </flux:badge>
                         @unless($this->opponent->user->email === 'bot@bot.bot')
                             <template x-if="opponent_is_friend === 'request_incoming'">
                                 <flux:badge as="button" variant="ghost" inset size="sm" wire:click="sendFriendRequest" icon="user-plus">Confirm</flux:badge>
@@ -354,12 +368,12 @@
                         @endunless
                     </div>
                 </div>
+                
                 <x-dynamic-component 
                     :component="'svg.' . $this->opponent->victory_shape"
                     class="w-14 h-14"
                 />
-                </div>
-            </flux:card>
+            </div>
         </div>
     </div>
 

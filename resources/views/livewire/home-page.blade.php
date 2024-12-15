@@ -124,4 +124,5 @@
         </flux:tab.panel>
 
     </flux:tab.group>
+    <x-footer />
 </div>
