@@ -1,5 +1,5 @@
 <div>
-    <flux:tab.group>
+    <flux:tab.group class="mt-10">
         <flux:tabs class="px-4">
             @if($this->active_game)
                 <flux:tab name="active_game">Active game</flux:tab>
