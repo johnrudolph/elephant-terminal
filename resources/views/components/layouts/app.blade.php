@@ -14,7 +14,7 @@
     </head>
     <body class="min-h-screen bg-white dark:bg-slate-900 text-zinc-800 dark:text-zinc-200">
         @if (auth()->user())
-            <flux:sidebar sticky stashable class="border-r bg-white dark:bg-slate-900 border-zinc-200 dark:border-zinc-700">
+            <flux:sidebar sticky stashable class="border-r bg-white dark:bg-slate-900 border-zinc-200 dark:border-zinc-700 z-20">
                 <flux:sidebar.toggle class="lg:hidden" icon="x-mark" />
         
                 <div class="flex flex-row space-x-4 items-center">

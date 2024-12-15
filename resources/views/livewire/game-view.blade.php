@@ -14,9 +14,17 @@
             player_is_victor: {{ $this->player_is_victor ? 'true' : 'false' }},
             opponent_is_victor: {{ $this->opponent_is_victor ? 'true' : 'false' }},
             player_forfeits_at: @json($this->player_forfeits_at),
+            player_victory_shape: '{{ $this->player->victory_shape }}',
+            opponent_victory_shape: '{{ $this->opponent->victory_shape }}',
+            player_id: '{{ $this->player->id }}',
+            opponent_id: '{{ $this->opponent->id }}',
         };
 
         return {
+            player_id: defaults.player_id,
+            opponent_id: defaults.opponent_id,
+            player_victory_shape: defaults.player_victory_shape,
+            opponent_victory_shape: defaults.opponent_victory_shape,
             player_forfeits_at: defaults.player_forfeits_at,
             victor_ids: defaults.victor_ids,
             player_is_victor: defaults.player_is_victor,
@@ -58,12 +66,12 @@
                         id: this.nextId++,
                         x: this.spaceToCoords({{ $space }}).x,
                         y: this.spaceToCoords({{ $space }}).y,
-                        playerId: {{ $playerId }},
+                        playerId: '{{ $playerId }}',
                         space: {{ $space }}
                     });
                 @endforeach
 
-                const elephant_coords = this.spaceToCoords(this.elephant_space);  
+                const elephant_coords = this.spaceToCoords(this.elephant_space);
                 this.$refs.elephant.style.transform = `translate(${elephant_coords.x}px, ${elephant_coords.y}px)`;
                 
                 setTimeout(() => {
@@ -96,7 +104,7 @@
                 this.animating = true;
                 this.phase = 'move';
 
-                if (player_id === {{ $this->player->id }}) {
+                if (player_id === this.player_id) {
                     this.player_hand--;
                 } else {
                     this.opponent_hand--;
@@ -231,6 +239,32 @@
                     this.tiles = updatedTiles;
                     this.animating = false;
                 }, 50);
+
+                player_victory_status = victory_status(this.tiles, this.player_victory_shape, this.player_id);
+                opponent_victory_status = victory_status(this.tiles, this.opponent_victory_shape, this.opponent_id);
+
+                console.log(player_victory_status, opponent_victory_status);
+
+                if (player_victory_status.has_won) {
+                    console.log('PLAYER WON');
+                    this.victor_ids.push(this.player_id);
+                    this.game_status = 'completed';
+                    this.winning_spaces.push(player_victory_status.winning_spaces);
+                    this.player_forfeits_at = null;
+                }
+
+                if (opponent_victory_status.has_won) {
+                    console.log('OPPONENT WON');
+                    this.victor_ids.push(this.opponent_id);
+                    this.game_status = 'completed';
+                    this.winning_spaces.push(opponent_victory_status.winning_spaces);
+                    this.player_forfeits_at = null;
+                }
+
+                console.log('victors', this.victor_ids);
+                console.log('status', this.game_status);
+                console.log( 'spaces', this.winning_spaces);
+                console.log('player_forfeits_at', this.player_forfeits_at);
             },
 
             init() {
@@ -385,7 +419,7 @@
                 <template x-for="i in 4">
                     <div>
                         <button 
-                            @click="playTile('down', i-1, {{ (string) $this->player->id }}); $wire.playTile('down', i)"
+                            @click="playTile('down', i-1, player_id); $wire.playTile('down', i)"
                             class="w-[58px] h-8 animate-pulse flex items-center justify-center"
                             x-show="Object.values(valid_slides).some(slide => slide['space'] === i && slide['direction'] === 'down')"
                         >
@@ -405,7 +439,7 @@
                 <template x-for="i in 4" >
                     <div>
                         <button 
-                            @click="playTile('from_left', i-1, {{ (string) $this->player->id }}); $wire.playTile('right', i)"
+                            @click="playTile('from_left', i-1, player_id); $wire.playTile('right', i)"
                             class="h-[58px] w-8 animate-pulse flex items-center justify-center"
                             x-show="Object.values(valid_slides).some(slide => slide['space'] === 1 + (i - 1) * 4 && slide['direction'] === 'right')"
                         >
@@ -426,7 +460,7 @@
                 <div class="relative">
                     <button 
                         x-show="elephant_phase && valid_elephant_moves.includes(i) && game_status === 'active' && is_player_turn"
-                        @click="moveElephant({{ (string) $this->player->id }}, i); $wire.moveElephant(i)" 
+                        @click="moveElephant(player_id, i); $wire.moveElephant(i)" 
                         class="absolute inset-0 bg-slate-400 opacity-20 animate-pulse rounded-lg z-20"
                     ></button>
                     <div 
@@ -441,8 +475,8 @@
                 <div 
                     class="absolute w-[58px] h-[58px] rounded-lg transition-all duration-700 ease-in-out"
                     :class="{
-                        'bg-orange dark:bg-dark-orange': tile.playerId === {{ (string) $this->player->id }},
-                        'bg-light-teal dark:bg-dark-teal': tile.playerId !== {{ (string) $this->player->id }},
+                        'bg-orange dark:bg-dark-orange': tile.playerId === player_id,
+                        'bg-light-teal dark:bg-dark-teal': tile.playerId === opponent_id,
                         'victory-wave-glow': winning_spaces.includes(tile.space)
                     }"
                     :style="`
@@ -470,7 +504,7 @@
                 <template x-for="i in 4">
                     <div>
                         <button 
-                            @click="playTile('from_right', i-1, {{ (string) $this->player->id }}); $wire.playTile('left', i)"
+                            @click="playTile('from_right', i-1, player_id); $wire.playTile('left', i)"
                             class="h-[58px] w-8 animate-pulse rounded-lg flex items-center justify-center"
                             x-show="Object.values(valid_slides).some(slide => slide['space'] === i * 4 && slide['direction'] === 'left')"
                         >
@@ -490,7 +524,7 @@
                 <template x-for="i in 4">
                     <div>
                         <button 
-                            @click="playTile('up', i-1, {{ (string) $this->player->id }}); $wire.playTile('up', i)"
+                            @click="playTile('up', i-1, player_id); $wire.playTile('up', i)"
                             class="w-[58px] h-8 animate-pulse flex items-center justify-center"
                             x-show="Object.values(valid_slides).some(slide => slide['space'] === i +12 && slide['direction'] === 'up')"
                         >
