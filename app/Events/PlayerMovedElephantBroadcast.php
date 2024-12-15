@@ -32,15 +32,6 @@ class PlayerMovedElephantBroadcast implements ShouldBroadcast
      */
     public function broadcastOn(): array
     {
-        Log::info('Broadcasting attempt', [
-            'game_id' => $this->game->id,
-            'channel' => 'games.'.$this->game->id,
-            'elephant_move_id' => $this->elephant_move->id,
-            'tile_move_id' => $this->prior_tile_move->id,
-            'timestamp' => now(),
-            'queue_connection' => config('queue.default')
-        ]);
-
         return [
             new PrivateChannel('games.'.$this->game->id),
         ];
