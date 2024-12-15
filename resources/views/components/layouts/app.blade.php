@@ -17,7 +17,10 @@
             <flux:sidebar sticky stashable class="border-r bg-white dark:bg-slate-900 border-zinc-200 dark:border-zinc-700">
                 <flux:sidebar.toggle class="lg:hidden" icon="x-mark" />
         
-                <flux:brand href="#" logo="" name="Elephant in the Room" class="px-2" />
+                <div class="flex flex-row space-x-4 items-center">
+                    <x-svg.elephant class="w-11 h-11 dark:text-white text-gray-900"/>
+                    <flux:heading size="lg">Elephant in the Room</flux:heading>
+                </div>
         
                 <flux:navlist variant="outline">
                     <flux:navlist.item icon="home" href="/dashboard">Home</flux:navlist.item>
