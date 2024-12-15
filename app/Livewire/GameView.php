@@ -174,24 +174,42 @@ class GameView extends Component
         return [
             "echo-private:games.{$this->game->id}:PlayerMovedElephantBroadcast" => 'handleElephantMove',
             "echo-private:games.{$this->game->id}:PlayerPlayedTileBroadcast" => 'handleTilePlayed',
-            "echo-private:users.{$this->user->id}:UserAddedFriendBroadcast" => 'handleFriendRequest',
             "echo-private:games.{$this->game->id}:GameEndedBroadcast" => 'handleGameEnded',
-            "echo-private:games.{$this->game->id}:GameForfeitedBroadcast" => 'handleGameForfeited',
+            "echo-private:users.{$this->user->id}:UserAddedFriendBroadcast" => 'handleFriendRequest',
         ];
     }
 
     public function handleElephantMove($event)
     {
-        $move = Move::find($event['move_id']);
+        dump('elephant moved', $event);
+        $move = Move::find($event['elephant_move_id']);
+
+        $prior_tile_move = Move::find($event['tile_move_id']);
 
         if ($move->player_id === $this->player->id) {
             return;
         }
 
+        $tile_direction = match($prior_tile_move->initial_slide['direction']) {
+            'down' => 'down',
+            'up' => 'up',
+            'left' => 'from_right',
+            'right' => 'from_left',
+        };
+
+        $tile_position = match($prior_tile_move->initial_slide['direction']) {
+            'down' => $prior_tile_move->initial_slide['space'] - 1,
+            'up' => $prior_tile_move->initial_slide['space'] - 13,
+            'right' => ($prior_tile_move->initial_slide['space'] - 1) / 4,
+            'left' => ($prior_tile_move->initial_slide['space'] / 4) - 1,
+        };
+
         $this->dispatch('opponent-moved-elephant', [
-            'position' => $move->elephant_after,
+            'elephant_move_position' => $move->elephant_after,
             'player_id' => (string) $move->player_id,
             'player_forfeits_at' => $this->player->fresh()->forfeits_at,
+            'tile_direction' => $tile_direction,
+            'tile_position' => $tile_position,
         ]);
 
         $this->game->refresh();
@@ -213,6 +231,7 @@ class GameView extends Component
 
     public function handleTilePlayed($event)
     {
+        dump('played tile', $event);
         $move = Move::find($event['move_id']);
 
         if ($move->player_id === $this->player->id) {
@@ -232,12 +251,6 @@ class GameView extends Component
             'right' => ($move->initial_slide['space'] - 1) / 4,
             'left' => ($move->initial_slide['space'] / 4) - 1,
         };
-
-        $this->dispatch('opponent-played-tile', [
-            'direction' => $direction,
-            'position' => $position,
-            'player_id' => (string) $move->player_id
-        ]);
 
         $this->game->refresh();
 
@@ -260,6 +273,15 @@ class GameView extends Component
             (string) $this->opponent->id, 
             $this->game->victor_ids
         );
+
+        $this->dispatch('opponent-played-tile', [
+            'direction' => $direction,
+            'position' => $position,
+            'player_id' => (string) $move->player_id,
+            'victor_ids' => $this->game->victor_ids,
+            'winning_spaces' => $this->game->winning_spaces,
+            'game_status' => $this->game->status,
+        ]);
     }
 
     public function handleGameEnded($event)
@@ -284,11 +306,11 @@ class GameView extends Component
 
     public function handleForfeit()
     {
-        GameForfeited::fire(
-            game_id: $this->game->id,
-            loser_id: $this->player->id,
-            winner_id: $this->opponent->id,
-        );
+        // GameForfeited::fire(
+        //     game_id: $this->game->id,
+        //     loser_id: $this->player->id,
+        //     winner_id: $this->opponent->id,
+        // );
     }
 
     public function sendFriendRequest()

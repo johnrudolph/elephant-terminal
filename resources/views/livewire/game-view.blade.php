@@ -288,9 +288,15 @@
 
                 this.$wire.on('opponent-played-tile', (data) => {
                     this.playTile(data[0].direction, data[0].position, data[0].player_id);
+                    this.game_status = data[0].status;
+                    this.victor_ids = data[0].victor_ids;
+                    this.winning_spaces = data[0].winning_spaces;
+                    this.player_is_victor = data[0].player_is_victor;
+                    this.opponent_is_victor = data[0].opponent_is_victor;
                 });
 
                 this.$wire.on('opponent-moved-elephant', (data) => {
+                    this.playTile(data[0].tile_direction, data[0].tile_position, data[0].player_id);
                     this.moveElephant(data[0].player_id, data[0].position);
                     this.player_forfeits_at = data[0].player_forfeits_at;
                 });
