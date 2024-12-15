@@ -313,9 +313,9 @@
         >
             <div class="flex justify-between items-center text-zinc-800 dark:text-zinc-200">
                 <div class="space-y-2">
-                    <flux:heading class="text-left">
+                    <flux:subheading class="text-left" size="sm">
                         {{ $this->player->user->name }}
-                    </flux:heading>
+                    </flux:subheading>
                     <div class="flex items-center space-x-2">
                         <div class="bg-orange dark:bg-dark-orange w-6 h-6 rounded-lg flex items-center justify-center">
                             <p class="font-bold text-white" x-text="player_hand"></p>
@@ -342,9 +342,9 @@
         >
             <div class="flex justify-between items-center text-zinc-800 dark:text-zinc-200">
                 <div class="space-y-2">
-                    <flux:heading class="text-left">
+                    <flux:subheading class="text-left" size="sm">
                         {{ $this->opponent->user->name }}
-                    </flux:heading>
+                    </flux:subheading>
                     <div class="flex items-center space-x-2">
                         <div class="bg-light-teal dark:bg-dark-teal w-6 h-6 rounded-lg flex items-center justify-center">
                             <p class="font-bold text-white" x-text="opponent_hand"></p>
