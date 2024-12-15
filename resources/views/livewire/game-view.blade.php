@@ -13,7 +13,7 @@
             winning_spaces: @json($this->winning_spaces),
             player_is_victor: {{ $this->player_is_victor ? 'true' : 'false' }},
             opponent_is_victor: {{ $this->opponent_is_victor ? 'true' : 'false' }},
-            player_forfeits_at: @json($this->player_forfeits_at),
+            player_forfeits_at: @json($this->player_forfeits_at ?? null),
             player_victory_shape: '{{ $this->player->victory_shape }}',
             opponent_victory_shape: '{{ $this->opponent->victory_shape }}',
             player_id: '{{ $this->player->id }}',
