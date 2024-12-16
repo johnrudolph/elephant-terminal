@@ -203,6 +203,10 @@ class GameView extends Component
             'left' => ($prior_tile_move->initial_slide['space'] / 4) - 1,
         };
 
+        if($this->player->fresh()->forfeits_at === null) {
+            dd('very bad');
+        }
+
         $this->dispatch('opponent-moved-elephant', [
             'elephant_move_position' => $move->elephant_after,
             'player_id' => (string) $move->player_id,
