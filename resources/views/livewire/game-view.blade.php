@@ -243,22 +243,26 @@
                     this.animating = false;
                 }, 50);
 
-                player_victory_status = victory_status(this.tiles, this.player_victory_shape, this.player_id);
-                opponent_victory_status = victory_status(this.tiles, this.opponent_victory_shape, this.opponent_id);
+                setTimeout(() => {
+                    player_victory_status = victory_status(this.tiles, this.player_victory_shape, this.player_id);
+                    opponent_victory_status = victory_status(this.tiles, this.opponent_victory_shape, this.opponent_id);
 
-                if (player_victory_status.has_won) {
-                    this.victor_ids.push(this.player_id);
-                    this.game_status = 'completed';
-                    this.winning_spaces.push(player_victory_status.winning_spaces);
-                    this.player_forfeits_at = null;
-                }
+                    if (player_victory_status.has_won) {
+                        this.victor_ids.push(this.player_id);
+                        this.game_status = 'completed';
+                        this.winning_spaces.push(...player_victory_status.winning_spaces);
+                        this.player_forfeits_at = null;
+                        this.player_is_victor = true;
+                    }
 
-                if (opponent_victory_status.has_won) {
-                    this.victor_ids.push(this.opponent_id);
-                    this.game_status = 'completed';
-                    this.winning_spaces.push(opponent_victory_status.winning_spaces);
-                    this.player_forfeits_at = null;
-                }
+                    if (opponent_victory_status.has_won) {
+                        this.victor_ids.push(this.opponent_id);
+                        this.game_status = 'completed';
+                        this.winning_spaces.push(...opponent_victory_status.winning_spaces);
+                        this.player_forfeits_at = null;
+                        this.opponent_is_victor = true;
+                    }
+                }, 500);
             },
 
             init() {
@@ -299,12 +303,13 @@
                 });
 
                 this.$wire.on('opponent-moved-elephant', (data) => {
-                    this.player_forfeits_at = data[0].player_forfeits_at;
                     this.playTile(data[0].tile_direction, data[0].tile_position, data[0].player_id);
 
                     setTimeout(() => {
                         this.moveElephant(data[0].player_id, data[0].elephant_move_position);
                     }, 700);
+
+                    this.player_forfeits_at = data[0].player_forfeits_at;
                 });
 
                 this.$wire.on('friend-status-changed', (data) => {
