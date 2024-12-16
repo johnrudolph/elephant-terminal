@@ -80,7 +80,10 @@
             },
 
             moveElephant(player_id, space) {
-                this.player_forfeits_at = null;
+                if (player_id === this.player_id) {
+                    this.player_forfeits_at = null;
+                }
+
                 this.animating = true;
                 this.elephant_space = space;
                 const coords = this.spaceToCoords(space);
@@ -296,11 +299,12 @@
                 });
 
                 this.$wire.on('opponent-moved-elephant', (data) => {
+                    this.player_forfeits_at = data[0].player_forfeits_at;
                     this.playTile(data[0].tile_direction, data[0].tile_position, data[0].player_id);
+
                     setTimeout(() => {
                         this.moveElephant(data[0].player_id, data[0].elephant_move_position);
                     }, 700);
-                    this.player_forfeits_at = data[0].player_forfeits_at;
                 });
 
                 this.$wire.on('friend-status-changed', (data) => {
