@@ -249,7 +249,7 @@
 
                     if (player_victory_status.has_won) {
                         this.victor_ids.push(this.player_id);
-                        this.game_status = 'completed';
+                        this.game_status = 'complete';
                         this.winning_spaces.push(...player_victory_status.winning_spaces);
                         this.player_forfeits_at = null;
                         this.player_is_victor = true;
@@ -257,7 +257,7 @@
 
                     if (opponent_victory_status.has_won) {
                         this.victor_ids.push(this.opponent_id);
-                        this.game_status = 'completed';
+                        this.game_status = 'complete';
                         this.winning_spaces.push(...opponent_victory_status.winning_spaces);
                         this.player_forfeits_at = null;
                         this.opponent_is_victor = true;

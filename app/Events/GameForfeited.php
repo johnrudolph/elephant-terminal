@@ -20,7 +20,7 @@ class GameForfeited extends Event
 
     public function apply(GameState $state)
     {
-        $state->status = 'completed';
+        $state->status = 'complete';
 
         $state->victor_ids = [$this->winner_id];
 
@@ -32,7 +32,7 @@ class GameForfeited extends Event
     public function handle()
     {
         $game = Game::find($this->game_id);
-        $game->status = 'completed';
+        $game->status = 'complete';
         $game->victor_ids = [$this->winner_id];
         $game->save();
 
