@@ -6,6 +6,7 @@ use App\Models\Game;
 use App\Models\Player;
 use Livewire\Component;
 use App\Events\GameStarted;
+use App\Events\GameCanceled;
 use App\Events\PlayerCreated;
 use Livewire\Attributes\Computed;
 use Illuminate\Support\Facades\Auth;
@@ -84,6 +85,13 @@ class PreGameLobby extends Component
         GameStarted::fire(game_id: $this->game->id);
 
         return redirect()->route('games.show', $this->game->id);
+    }
+
+    public function leave()
+    {
+        GameCanceled::fire(game_id: $this->game->id);
+
+        return redirect()->route('dashboard');
     }
 
     public function render()

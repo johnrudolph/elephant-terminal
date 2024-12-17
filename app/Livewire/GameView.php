@@ -88,7 +88,7 @@ class GameView extends Component
             return redirect()->route('dashboard');
         }
 
-        if (! $this->player || ! $this->opponent) {
+        if (! $this->player || ! $this->opponent || $this->game->status === 'created') {
             return redirect()->route('games.pre-game-lobby.show', $this->game);
         }
 

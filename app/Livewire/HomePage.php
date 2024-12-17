@@ -35,7 +35,21 @@ class HomePage extends Component
     #[Computed]
     public function active_game()
     {
-        return $this->user->games->where('status', 'active')->last();
+        $active_game = $this->user->games->where('status', 'active')->last();
+
+        if ($active_game) {
+            return $active_game;
+        }
+
+        $upcoming_game = $this->user->games->where('status', 'created')
+            ->filter(fn ($g) => $g->players->count() === 2)
+            ->first();
+
+        if ($upcoming_game) {
+            return $upcoming_game;
+        }
+
+        return null;
     }
 
     #[Computed]
@@ -57,6 +71,7 @@ class HomePage extends Component
             ->reject(function ($game) {
                 return $game->players->first()->user->id === $this->user->id;
             })
+            ->reject(fn ($g) => $g->players->count() === 2)
             ->sortByDesc('created_at')
             ->map(function ($game) {
                 return [
@@ -123,8 +138,6 @@ class HomePage extends Component
             is_bot: false,
             victory_shape: $victory_shape,
         );
-
-        GameStarted::fire(game_id: (int) $game_id);
 
         $this->user->closeInactiveGames();
 

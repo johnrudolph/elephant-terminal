@@ -469,7 +469,7 @@
                     <button 
                         x-show="elephant_phase && valid_elephant_moves.includes(i) && game_status === 'active' && is_player_turn"
                         @click="moveElephant(player_id, i); $wire.moveElephant(i)" 
-                        class="absolute inset-0 bg-slate-400 opacity-20 animate-pulse rounded-lg z-20"
+                        class="absolute inset-0 bg-slate-800 dark:bg-slate-100 opacity-20 animate-pulse rounded-lg z-20"
                     ></button>
                     <div 
                         class="absolute inset-0 bg-gray-100 dark:opacity-20 dark:bg-zinc-700 rounded-lg"
@@ -548,7 +548,7 @@
     </div>
 
     <div x-show="player_forfeits_at === null && game_status === 'active'">
-        <p class="text-sm text-slate-800 dark:text-gray-200 animate-pulse">Opponent is thinking...</p>
+        <p class="text-sm text-slate-800 -mt-2 dark:text-gray-200 animate-pulse">Opponent is thinking...</p>
     </div>
 
     <template x-if="player_forfeits_at">
