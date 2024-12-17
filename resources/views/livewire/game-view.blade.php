@@ -547,6 +547,10 @@
         </div>
     </div>
 
+    <div x-show="player_forfeits_at === null && game_status === 'active'">
+        <p class="text-sm text-slate-800 dark:text-gray-200 animate-pulse">Opponent is thinking...</p>
+    </div>
+
     <template x-if="player_forfeits_at">
         <div class="w-[240px] mt-4">
             <div 
